@@ -1,0 +1,2717 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Born2beRoot Malumatnamesi</title>
+<meta name="description" content="Born2beRoot projesi için çalışma rehberi ve tekrar uygulaması">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0F1720">
+<link rel="apple-touch-icon" href="ikon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Born2beRoot">
+<script>
+/* Kurulum olayı sayfa yüklenirken çok erken tetiklenebiliyor; buradan
+   yakalanmazsa kimse dinlemediği için kayboluyor ve düğme hiç çıkmıyor. */
+window.kurulumOlayi = null;
+window.addEventListener("beforeinstallprompt", function (olay) {
+  olay.preventDefault();
+  window.kurulumOlayi = olay;
+  window.dispatchEvent(new Event("kurulum-hazir"));
+});
+window.addEventListener("appinstalled", function () {
+  window.kurulumOlayi = null;
+  window.dispatchEvent(new Event("kurulum-bitti"));
+});
+</script>
+<style>
+/* ---- Renk değişkenleri: gece varsayılan ---- */
+:root{
+  --zemin:#0F1720;
+  --yuzey:#17222D;
+  --yuzey2:#1E2B38;
+  --cizgi:#27353F;
+  --yazi:#DDE5EC;
+  --sonuk:#8395A5;
+  --vurgu:#E3A85C;
+  --vurgu-zemin:rgba(227,168,92,.14);
+  --dogru:#62B49B;
+  --dogru-zemin:rgba(98,180,155,.16);
+  --yanlis:#D4706E;
+  --yanlis-zemin:rgba(212,112,110,.16);
+  --golge:0 1px 0 rgba(255,255,255,.03);
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,"JetBrains Mono","Cascadia Mono",Menlo,Consolas,monospace;
+  --metin:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+html[data-mod="gunduz"]{
+  --zemin:#EBEFF3;
+  --yuzey:#FFFFFF;
+  --yuzey2:#F4F7F9;
+  --cizgi:#D3DCE4;
+  --yazi:#16212C;
+  --sonuk:#566674;
+  --vurgu:#965C14;
+  --vurgu-zemin:rgba(150,92,20,.10);
+  --dogru:#2F7F68;
+  --dogru-zemin:rgba(47,127,104,.12);
+  --yanlis:#B24A47;
+  --yanlis-zemin:rgba(178,74,71,.12);
+  --golge:0 1px 2px rgba(22,33,44,.06);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--zemin);color:var(--yazi);
+  font-family:var(--metin);font-size:16px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+}
+button,input{font:inherit;color:inherit}
+button{background:none;border:0;cursor:pointer}
+code,kbd,pre{font-family:var(--mono)}
+
+/* ---- Üst çubuk ---- */
+.ust{
+  position:sticky;top:0;z-index:30;
+  display:flex;align-items:center;gap:12px;
+  padding:calc(10px + env(safe-area-inset-top)) 16px 10px;
+  background:var(--zemin);border-bottom:1px solid var(--cizgi);
+}
+.ust h1{
+  margin:0;font-size:15px;font-weight:600;letter-spacing:.01em;flex:1;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.ust .kok{font-family:var(--mono);color:var(--vurgu);font-weight:400}
+.mod-dugme{
+  width:38px;height:38px;border-radius:10px;border:1px solid var(--cizgi);
+  display:grid;place-items:center;background:var(--yuzey);flex:none;
+}
+.mod-dugme svg{width:18px;height:18px;stroke:var(--yazi);fill:none;stroke-width:1.7;stroke-linecap:round}
+
+/* ---- Sayfa gövdesi ---- */
+main{max-width:720px;margin:0 auto;padding:16px}
+.sayfa{display:none}
+.sayfa.acik{display:block}
+
+/* ---- lsblk ağacı: bölüm listesi ---- */
+.agac{font-family:var(--mono);font-size:14px;line-height:1.9;margin:4px 0 0}
+.agac-baslik{color:var(--sonuk);font-size:12.5px;margin-bottom:6px;letter-spacing:.02em}
+.dal{
+  display:flex;align-items:baseline;gap:0;width:100%;text-align:left;
+  padding:1px 4px;border-radius:6px;
+}
+.dal:hover,.dal:focus-visible{background:var(--yuzey)}
+.dal .cizim{color:var(--sonuk);white-space:pre;flex:none}
+.dal .ad{color:var(--yazi);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dal .rozet{color:var(--sonuk);font-size:12px;flex:none;padding-left:8px}
+.dal.okundu .ad{color:var(--sonuk)}
+.dal.okundu .rozet{color:var(--dogru)}
+
+/* ---- Okuma alanı ---- */
+.okuma{font-size:var(--okuma-boyut,16.5px);line-height:1.72;letter-spacing:.002em}
+.okuma mark{background:var(--vurgu-zemin);color:var(--vurgu);padding:0 2px;border-radius:3px}
+.okuma h2{
+  font-size:19px;line-height:1.35;margin:0 0 4px;font-weight:650;
+  padding-bottom:10px;border-bottom:2px solid var(--vurgu);
+}
+.okuma h3{
+  font-size:15.5px;font-weight:650;margin:30px 0 8px;line-height:1.4;
+  color:var(--yazi);
+}
+.okuma h3:first-of-type{margin-top:22px}
+.okuma p{margin:0 0 14px;max-width:66ch}
+.okuma p strong{font-weight:650}
+.okuma code{
+  font-size:.88em;background:var(--vurgu-zemin);color:var(--vurgu);
+  padding:1px 5px;border-radius:4px;word-break:break-word;
+}
+.okuma pre{
+  margin:0 0 16px;padding:12px 14px;overflow-x:auto;
+  background:var(--yuzey);border:1px solid var(--cizgi);border-left:3px solid var(--vurgu);
+  border-radius:8px;font-size:13.5px;line-height:1.65;
+}
+.okuma pre code{background:none;color:var(--yazi);padding:0;font-size:inherit}
+
+/* Okuma başlığı ve gezinme */
+.okuma-ust{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.okuma-ust .bosluk{flex:1}
+.boyut-dugme{
+  width:36px;height:34px;border-radius:8px;border:1px solid var(--cizgi);
+  background:var(--yuzey);color:var(--yazi);font-family:var(--mono);font-size:13px;flex:none;
+}
+.boyut-dugme:disabled{opacity:.35}
+.devam{
+  display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  padding:12px 14px;border-radius:10px;border:1px solid var(--vurgu);
+  background:var(--vurgu-zemin);margin-bottom:14px;
+}
+.devam .ok{color:var(--vurgu);font-family:var(--mono);flex:none}
+.devam .yazi{flex:1;min-width:0}
+.devam .ust-satir{display:block;font-size:12px;color:var(--sonuk)}
+.devam .ad{display:block;font-size:14.5px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fihrist-giris{
+  display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:12px 14px;border-radius:10px;border:1px solid var(--cizgi);
+  background:var(--yuzey);margin-bottom:10px;font-size:14.5px;
+}
+.fihrist-giris .ok{color:var(--vurgu);font-family:var(--mono)}
+.fihrist-satir{
+  display:block;width:100%;text-align:left;font-family:var(--mono);font-size:13.5px;
+  padding:10px 12px;border-radius:8px;border:1px solid var(--cizgi);
+  background:var(--yuzey);margin-bottom:7px;overflow-wrap:anywhere;line-height:1.45;
+}
+.fihrist-satir:hover{border-color:var(--vurgu)}
+.icindekiler{
+  display:grid;gap:2px;margin:0 0 20px;padding:12px 14px;
+  border-radius:10px;background:var(--yuzey);border:1px solid var(--cizgi);
+}
+.icindekiler button{
+  text-align:left;font-size:13.5px;line-height:1.45;padding:5px 0;color:var(--sonuk);
+}
+.icindekiler button:hover{color:var(--vurgu)}
+.kontrol-oge.sirada{border-color:var(--vurgu);background:var(--vurgu-zemin)}
+.metin-basligi{
+  font-family:var(--mono);font-size:12.5px;color:var(--sonuk);
+  margin:20px 0 8px;padding-top:14px;border-top:1px solid var(--cizgi);
+}
+.kesit{
+  font-size:13.5px;line-height:1.55;color:var(--sonuk);margin:0;
+  font-family:var(--mono);overflow-wrap:anywhere;
+}
+.kesit b{color:var(--vurgu);font-weight:600}
+.sonuc-kart .adet{font-size:12px;color:var(--sonuk);font-family:var(--mono)}
+.geri{
+  display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--sonuk);
+  padding:6px 10px;border-radius:8px;border:1px solid var(--cizgi);background:var(--yuzey);
+}
+.okuma-alt{
+  display:flex;gap:10px;margin:28px 0 8px;padding-top:18px;border-top:1px solid var(--cizgi);
+}
+.okuma-alt button{
+  flex:1;padding:12px;border-radius:10px;border:1px solid var(--cizgi);
+  background:var(--yuzey);font-size:14px;color:var(--yazi);
+}
+.okuma-alt button:disabled{opacity:.35}
+.okundu-dugme{
+  width:100%;margin-top:12px;padding:12px;border-radius:10px;font-size:14px;
+  border:1px solid var(--cizgi);background:var(--yuzey);color:var(--yazi);
+}
+.okundu-dugme.isaretli{background:var(--dogru-zemin);border-color:var(--dogru);color:var(--dogru)}
+
+/* ---- Arama ---- */
+.arama-kutu{position:relative;margin-bottom:8px}
+.arama-kutu input{
+  width:100%;padding:13px 40px 13px 14px;border-radius:10px;
+  border:1px solid var(--cizgi);background:var(--yuzey);font-size:15px;
+}
+.arama-kutu input:focus{outline:2px solid var(--vurgu);outline-offset:-1px}
+.arama-sil{
+  position:absolute;right:6px;top:50%;transform:translateY(-50%);
+  width:32px;height:32px;border-radius:8px;color:var(--sonuk);font-size:18px;
+}
+.oneri{
+  list-style:none;margin:0;padding:0;border:1px solid var(--cizgi);border-radius:10px;
+  background:var(--yuzey);overflow:hidden;
+}
+.oneri:empty{display:none}
+.oneri li button{
+  display:block;width:100%;text-align:left;padding:11px 14px;
+  border-bottom:1px solid var(--cizgi);font-size:14.5px;
+}
+.oneri li:last-child button{border-bottom:0}
+.oneri li button:hover,.oneri li button:focus-visible{background:var(--yuzey2)}
+.oneri .terim{font-family:var(--mono);color:var(--vurgu);font-size:13.5px}
+.oneri .kisa{display:block;color:var(--sonuk);font-size:13px;margin-top:2px;line-height:1.45}
+
+.sonuc{margin-top:14px}
+.sonuc-kart{
+  border:1px solid var(--cizgi);border-radius:10px;background:var(--yuzey);
+  padding:14px;margin-bottom:10px;box-shadow:var(--golge);
+}
+.sonuc-kart h4{margin:0 0 6px;font-size:14.5px;font-family:var(--mono);color:var(--vurgu);font-weight:500}
+.sonuc-kart p{margin:0;font-size:14.5px;line-height:1.6}
+.sonuc-kart .nereden{
+  display:inline-block;margin-top:10px;font-size:12.5px;color:var(--sonuk);
+  border-bottom:1px solid var(--cizgi);
+}
+.bos{color:var(--sonuk);font-size:14.5px;padding:24px 4px;text-align:center;line-height:1.6}
+
+/* ---- Çalışma ---- */
+.mod-liste{display:grid;gap:10px}
+.mod-kart{
+  display:block;width:100%;text-align:left;padding:14px;border-radius:12px;
+  border:1px solid var(--cizgi);background:var(--yuzey);box-shadow:var(--golge);
+}
+.mod-kart .ad{font-size:15px;font-weight:600;display:block;margin-bottom:3px}
+.mod-kart .izah{font-size:13.5px;color:var(--sonuk);line-height:1.5;display:block}
+.mod-kart .sayi{font-family:var(--mono);font-size:12.5px;color:var(--vurgu);margin-top:8px;display:block}
+
+.ilerleme{
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  font-family:var(--mono);font-size:12.5px;color:var(--sonuk);
+}
+.ilerleme .cubuk{flex:1;height:4px;border-radius:2px;background:var(--cizgi);overflow:hidden}
+.ilerleme .dolu{height:100%;background:var(--vurgu);transition:width .25s ease}
+
+.soru{
+  border:1px solid var(--cizgi);border-radius:12px;background:var(--yuzey);
+  padding:16px;margin-bottom:14px;box-shadow:var(--golge);
+}
+.soru .etiket{
+  font-family:var(--mono);font-size:12px;color:var(--vurgu);
+  display:block;margin-bottom:8px;
+}
+.soru .metin{font-size:16px;line-height:1.55;margin:0 0 4px}
+.soru pre{
+  margin:12px 0 0;padding:11px 12px;background:var(--yuzey2);border:1px solid var(--cizgi);
+  border-radius:8px;font-size:13.5px;overflow-x:auto;
+}
+.secenekler{display:grid;gap:9px;margin-top:14px}
+.secenek{
+  display:flex;gap:11px;align-items:flex-start;width:100%;text-align:left;
+  padding:12px 13px;border-radius:10px;border:1px solid var(--cizgi);
+  background:var(--yuzey);font-size:14.5px;line-height:1.5;
+}
+.secenek .harf{
+  font-family:var(--mono);font-size:12.5px;color:var(--sonuk);flex:none;
+  width:20px;height:20px;border-radius:5px;border:1px solid var(--cizgi);
+  display:grid;place-items:center;margin-top:1px;
+}
+.secenek:hover:not(:disabled){border-color:var(--vurgu)}
+.secenek.dogru{background:var(--dogru-zemin);border-color:var(--dogru)}
+.secenek.dogru .harf{border-color:var(--dogru);color:var(--dogru)}
+.secenek.yanlis{background:var(--yanlis-zemin);border-color:var(--yanlis)}
+.secenek.yanlis .harf{border-color:var(--yanlis);color:var(--yanlis)}
+.secenek:disabled{cursor:default;opacity:1}
+
+/* Komut dizme */
+.dizi-alan{
+  min-height:52px;margin-top:14px;padding:10px;border-radius:10px;
+  border:1px dashed var(--cizgi);background:var(--yuzey2);
+  display:flex;flex-wrap:wrap;gap:7px;align-content:flex-start;
+}
+.dizi-alan.bos-alan::before{
+  content:attr(data-ipucu);color:var(--sonuk);font-size:13px;font-family:var(--metin);
+}
+.havuz{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.parca{
+  font-family:var(--mono);font-size:13.5px;padding:8px 11px;border-radius:8px;
+  border:1px solid var(--cizgi);background:var(--yuzey);line-height:1.3;
+  overflow-wrap:anywhere;max-width:100%;text-align:left;
+}
+.parca:hover{border-color:var(--vurgu)}
+.dizi-alan .parca{background:var(--vurgu-zemin);border-color:var(--vurgu);color:var(--yazi)}
+.dizi-alan.dogru-alan{border-style:solid;border-color:var(--dogru);background:var(--dogru-zemin)}
+.dizi-alan.yanlis-alan{border-style:solid;border-color:var(--yanlis);background:var(--yanlis-zemin)}
+
+/* Eşleştirme */
+.esles{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+.esles-sutun{display:grid;gap:8px;align-content:start}
+.esles-oge{
+  padding:11px 10px;border-radius:9px;border:1px solid var(--cizgi);background:var(--yuzey);
+  font-size:13px;line-height:1.4;text-align:left;min-height:44px;
+  overflow-wrap:anywhere;min-width:0;
+}
+.esles-oge.sag{font-family:var(--mono);font-size:12.5px}
+.esles-oge.secili{border-color:var(--vurgu);background:var(--vurgu-zemin)}
+.esles-oge.tamam{border-color:var(--dogru);background:var(--dogru-zemin);color:var(--dogru);cursor:default}
+.esles-oge.hata{border-color:var(--yanlis);background:var(--yanlis-zemin)}
+
+/* Kart (flashcard) */
+.kart{
+  border:1px solid var(--cizgi);border-radius:14px;background:var(--yuzey);
+  padding:26px 18px;min-height:210px;display:flex;flex-direction:column;
+  justify-content:center;gap:14px;text-align:center;box-shadow:var(--golge);
+}
+.kart .on{font-size:19px;font-weight:600;line-height:1.4}
+.kart .on.komut{font-family:var(--mono);font-size:16px;font-weight:500;color:var(--vurgu)}
+.kart .arka{font-size:15px;line-height:1.6;color:var(--yazi);text-align:left}
+.kart .ipucu{font-size:13px;color:var(--sonuk)}
+
+/* İzah kutusu */
+.izah{
+  margin-top:14px;padding:12px 13px;border-radius:9px;
+  background:var(--yuzey2);border-left:3px solid var(--vurgu);
+  font-size:14px;line-height:1.6;
+}
+.izah .nereden{display:block;margin-top:7px;font-size:12.5px;color:var(--sonuk)}
+
+/* Kontrol listesi */
+.kontrol{display:grid;gap:9px}
+.kontrol-oge{
+  display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;
+  padding:13px;border-radius:10px;border:1px solid var(--cizgi);background:var(--yuzey);
+  font-size:14.5px;line-height:1.5;
+}
+.kutucuk{
+  flex:none;width:21px;height:21px;border-radius:6px;border:1.5px solid var(--cizgi);
+  display:grid;place-items:center;margin-top:1px;font-size:13px;color:transparent;
+}
+.kontrol-oge.tikli .kutucuk{background:var(--dogru);border-color:var(--dogru);color:var(--zemin)}
+.kontrol-oge.tikli{color:var(--sonuk)}
+
+/* Alt eylem düğmeleri */
+.eylem{display:flex;gap:10px;margin-top:16px}
+.eylem button{
+  flex:1;padding:13px;border-radius:10px;font-size:14.5px;font-weight:550;
+  border:1px solid var(--cizgi);background:var(--yuzey);color:var(--yazi);
+}
+.eylem button.ana{background:var(--vurgu);border-color:var(--vurgu);color:#12181F}
+html[data-mod="gunduz"] .eylem button.ana{color:#FFF}
+html[data-mod="gunduz"] .okuma mark{background:rgba(150,92,20,.16)}
+.eylem button:disabled{opacity:.4}
+
+/* Sonuç ekranı */
+.bitis{text-align:center;padding:30px 10px}
+.bitis .puan{font-family:var(--mono);font-size:40px;color:var(--vurgu);line-height:1.1}
+.bitis .alt{color:var(--sonuk);font-size:14.5px;margin-top:8px}
+.bitis .yanlislar{margin-top:24px;text-align:left}
+.bitis .yanlislar h4{margin:0 0 10px;font-size:14px;color:var(--sonuk);font-weight:600}
+
+/* ---- Alt gezinme ---- */
+.alt-cubuk{
+  position:fixed;left:0;right:0;bottom:0;z-index:40;
+  display:grid;grid-template-columns:repeat(4,1fr);
+  background:var(--yuzey);border-top:1px solid var(--cizgi);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.alt-cubuk button{
+  padding:9px 4px 10px;display:grid;justify-items:center;gap:3px;
+  font-size:11px;color:var(--sonuk);
+}
+.alt-cubuk button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.alt-cubuk button.etkin{color:var(--vurgu)}
+
+/* ---- Kurulum şeridi ---- */
+.kurulum{
+  position:fixed;left:10px;right:10px;z-index:50;
+  bottom:calc(72px + env(safe-area-inset-bottom));
+  background:var(--yuzey);border:1px solid var(--vurgu);border-radius:14px;
+  padding:14px;box-shadow:0 8px 28px rgba(0,0,0,.28);
+}
+.kurulum .baslik{font-size:14.5px;font-weight:600;margin:0 0 4px}
+.kurulum .metin{font-size:13.5px;color:var(--sonuk);margin:0;line-height:1.5}
+.kurulum .adimlar{margin:10px 0 0;padding-left:18px;font-size:13.5px;line-height:1.65;color:var(--yazi)}
+.kurulum .adimlar li{margin-bottom:3px}
+.kurulum .eylem{margin-top:12px}
+.kurulum .eylem button{padding:11px;font-size:14px}
+
+:focus-visible{outline:2px solid var(--vurgu);outline-offset:2px;border-radius:6px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (min-width:640px){
+  body{font-size:17px}
+}
+</style>
+</head>
+<body>
+<header class="ust">
+  <h1><span class="kok">root@</span>Born2beRoot Malumatnamesi</h1>
+  <button class="mod-dugme" id="modDugme" aria-label="Gece/gündüz modunu değiştir"></button>
+</header>
+<main>
+  <section class="sayfa acik" id="sayfaOku"></section>
+  <section class="sayfa" id="sayfaAra"></section>
+  <section class="sayfa" id="sayfaCalis"></section>
+  <section class="sayfa" id="sayfaEvo"></section>
+</main>
+<nav class="alt-cubuk" id="altCubuk"></nav>
+<script id="kaynak" type="text/markdown">
+# Born2beRoot Malumatnamesi
+
+## Giriş — Bu Rehberi Nasıl Kullanmalısın
+
+### Projenin amacı ve değerlendirme mantığı
+Born2beRoot, 42 müfredatının ilk sistem yönetimi projesi. Amaç: VirtualBox (ya da UTM) içinde Debian tabanlı, GUI'siz, minimal ve güvenli bir sunucu kurup katı kurallara göre yapılandırmak. Değerlendirme "kod oku" şeklinde değil — bir peer (ya da personel) VM'ini AÇIP CANLI geziyor: SSH ile bağlanıyor, sudo deniyor, yeni kullanıcı açtırıyor, monitoring.sh'i durdurmanı istiyor, hostname değiştirtiyor. Bilmen gereken şey ezberlenmiş bir kurulum değil, YAŞAYAN bir sistemi anlık açıklayabilme becerisi.
+
+### Teslimat sadece README.md + signature.txt; VM canlı olarak incelenir
+Git reposuna SADECE bu iki dosya konur, VM'in kendisi asla eklenmez — mekanizmanın tamamı bölüm 14'te.
+
+### 42'nin AI politikasıyla ilişkisi: bu rehber bir anlama aracıdır, çözüm kaynağı değil
+Bu yüzden hazır config dosyaları değil kavram ve örnek sözdizimi sunuyor — gerçek dosyaları VM'de SEN yazacaksın, savunmada "neden bu değeri verdin" sorusuna cevap verebilmen gerekiyor.
+
+### Rehberi okurken izlenecek sıra: önce kavram, sonra komut, sonra "neden" sorusu
+Her alt başlığı üç soruyla oku: (1) Bu ne — kavram ne anlatıyor? (2) Nasıl yapılır — hangi komut/dosya? (3) Neden böyle — alternatifi ne olurdu, savunmada nasıl sorulabilir? Bu üçlü hem ezber yerine kavrama sağlar hem savunmaya hazırlar.
+
+### Hızlı Kavram Sözlüğü — okumaya başlamadan önce göz at
+```
+VM (Sanal Makine) : Fiziksel bilgisayar içinde çalışan, bağımsız bir bilgisayar simülasyonu
+Hypervisor         : VM oluşturup yöneten yazılım (VirtualBox, UTM gibi)
+Partition          : Bir diskin ayrılmış bölümü
+Mount point        : Bir partition'ın dizin ağacında göründüğü yer (/, /boot, /home gibi)
+sudo               : Yetkili komutları geçici olarak, iz bırakarak çalıştırma aracı
+Firewall           : Ağ trafiğini kurallara göre süzen güvenlik katmanı
+```
+Daha ileri terimler (LVM, LUKS, PAM, MAC/DAC, cron, systemd...) kendi bölümlerinde açıklanıyor ve savunma öncesi tekrar için Ek bölümünde topluca listeleniyor — burada tekrar etmiyorum.
+
+## 1. Sanallaştırma Temelleri: VirtualBox ve UTM
+
+### Sanal makine (VM) ve hypervisor kavramı
+Sanal makine (VM), fiziksel bilgisayarının içinde çalışan, kendi sanal donanımına (CPU, RAM, disk, ağ kartı) sahip bağımsız bir bilgisayar simülasyonudur. Bunu mümkün kılan yazılıma hypervisor denir; VirtualBox ve UTM birer hypervisor'dür (Tip-2, yani normal işletim sisteminin üzerinde bir uygulama gibi çalışırlar). VM sayesinde ana makineni bozma riski olmadan sıfırdan bir Linux sunucusu deneyebilirsin.
+
+### VirtualBox'ta yeni VM oluşturma adımları (RAM, sanal disk, ISO bağlama)
+Yeni > isim ve tip (Linux/Debian) seç > RAM ayarla (1-2GB genelde yeterli, projede performans değil doğruluk önemli) > "Sanal sabit disk oluştur" seç, VDI formatı, "dinamik olarak ayrılan" boyut (ör. 8-10GB, ihtiyaca göre büyür) > Ayarlar > Depolama'dan indirdiğin .iso dosyasını sanal CD sürücüsüne bağla > Başlat, kurulum sihirbazı açılır.
+
+### UTM ne zaman kullanılır (Apple Silicon durumu)
+Apple Silicon (M1/M2/M3) Mac'lerde VirtualBox resmi olarak desteklenmiyor; bu durumda UTM (QEMU tabanlı) kullanılır. UTM'de disk dosyası .qcow2 uzantılıdır, VirtualBox'taki .vdi'nin karşılığıdır — signature.txt için hash alırken bunu unutma.
+
+### .vdi / .qcow2 disk dosyaları: ne işe yarar, nerede saklanır
+Bunlar VM'inin sanal sabit diskini temsil eden dosyalardır; kurduğun işletim sisteminin tamamı (partition'lar, dosyalar, her şey) içinde saklanır. Windows'ta `%HOMEDRIVE%%HOMEPATH%\VirtualBox VMs\`, Linux/Mac'te `~/VirtualBox VMs/` altında bulunur (UTM için `~/Library/Containers/com.utmapp.UTM/Data/Documents/`). Bu dosyayı ASLA git'e eklemeyeceksin — signature.txt için sadece hash'ini alacaksın.
+
+### Ağ modu ve port yönlendirme: SSH'a dışarıdan nasıl ulaşılır
+VirtualBox varsayılan olarak NAT modu kullanır — VM dışarı çıkabilir ama dışarıdan VM'e DOĞRUDAN ulaşılamaz. Değerlendiricinin (ya da host'un) VM'in SSH'ına (4242) bağlanabilmesi için Ayarlar > Ağ > Gelişmiş > Port Yönlendirme'den bir kural eklemen gerekir: host'ta bir port → guest'te 4242. Alternatif: ağ modunu "Köprülenmiş Adaptör" (Bridged) yaparsan VM ağında kendi IP'sini alır, doğrudan o IP + 4242 ile erişilir, port yönlendirmeye gerek kalmaz — savunmalarda genelde bu daha sorunsuzdur. Bölüm 6'daki SSH ayarları bu adım olmadan dışarıdan test edilemez.
+
+## 2. İşletim Sistemi Seçimi: Debian vs Rocky Linux
+
+### Debian ailesi ile Rocky/RHEL ailesi arasındaki köken farkı
+Debian, bağımsız, topluluk odaklı bir dağıtımdır; Ubuntu dahil pek çok dağıtımın atasıdır. Rocky Linux ise CentOS'un yerini almak için kurulan, Red Hat Enterprise Linux (RHEL) ile ikili-uyumlu (binary compatible) kurumsal bir dağıtımdır. İki aile de aynı Linux çekirdeğini kullanır ama paket formatı, dosya düzeni gelenekleri ve güvenlik araçları farklıdır.
+
+### Paket yönetimi: apt / aptitude / dpkg ile dnf / rpm karşılaştırması
+Debian ailesi .deb paketlerini apt (üst seviye, bağımlılık çözer) ve dpkg (alt seviye, tek paket kurar) ile yönetir; aptitude, apt'a benzer ama farklı bir bağımlılık çözme stratejisi ve arayüz sunan alternatif bir ön yüzdür — ikisi de dpkg'yi kullanır. Rocky ailesi .rpm paketlerini dnf (yum'un yerini alan modern araç) ile yönetir. Savunmada "apt ile aptitude farkı nedir" sorulabileceği subject'te açıkça yazıyor — bu tanımı ezberle.
+
+### Hangi durumda hangisi tercih edilir
+Subject açıkça "sistem yönetimine yeniyseniz Debian önerilir" diyor, üstelik "Rocky kurulumu oldukça karmaşık" diye ayrıca uyarıyor. Sen Debian/Rocky'nin hiçbirini bilmiyorsun ama Ubuntu ile çalışacaksın — Ubuntu, Debian'ın türevi; apt, dpkg, systemd, hatta varsayılan AppArmor kullanımı bile Debian ile neredeyse birebir örtüşüyor. Ubuntu'da öğrendiğin refleksler doğrudan buraya taşınır. Bu yüzden bu rehberde **Debian ana hat**, Rocky ise karşılaştırma bilgisi olarak işleniyor.
+
+### README'deki "Debian vs Rocky" karşılaştırması için not noktaları
+README'nin "Project description" bölümü bu karşılaştırmayı zorunlu kılıyor. Not tutman gereken eksen: köken (bağımsız topluluk vs RHEL-uyumlu kurumsal), paket yönetimi (apt/dpkg vs dnf/rpm), varsayılan MAC aracı (AppArmor vs SELinux), varsayılan firewall (ufw vs firewalld), öğrenme eğrisi (Debian daha yumuşak, Rocky kurumsal ortamlarda daha yaygın).
+
+## 3. Minimal Sunucu Kurulumu
+
+### Neden grafik arayüz (X.org / Wayland) yasak — sunucu felsefesi
+Sunucu, arka planda hizmet veren, önünde oturup fare tıklamadığın bir makinedir. X.org/Wayland gibi grafik sunucuları hem gereksiz kaynak tüketir hem de saldırı yüzeyini büyütür (daha fazla paket = daha fazla güvenlik açığı ihtimali). Subject bunu, kurulu bulunursa notunun SIFIR olacağı kadar ciddiye alıyor — kurulum sırasında "masaüstü ortamı" (GNOME, Xfce vb.) seçeneğini KESİNLİKLE işaretleme.
+
+### Netinstall / minimal kurulum akışı
+Debian netinst ISO'sunu indir (küçük boyutlu, kurulum sırasında internetten paket çeker). Sihirbazda: dil/klavye seç > hostname gir (login+42 formatında, örn. hyahyato42 — baştan doğru gir) > disk partisyonlama ekranına gel (bkz. bölüm 4) > paket seçim ekranında SADECE "SSH server" ve "standard system utilities" işaretli kalsın, masaüstü ortamı seçeneklerini MUTLAKA kaldır.
+
+### Kurulum sırasında dikkat edilecek ekranlar (disk, ağ, paket seçimi)
+En kritik üç an: (1) partisyon ekranı — "Manuel" seçip LVM+şifreleme adımını sen yöneteceksin, (2) paket seçim ekranı — masaüstü ortamı işaretlerini temizle, (3) GRUB boot loader ekranı — ana diske kurulmasını onayla, aksi halde VM açılmaz.
+
+### Klavye düzeni tuzağı
+Kurulumda seçtiğin klavye düzeni, sonradan parola yazarken de geçerli olur. Türkçe düzende `q w x` ve özellikle `. , : / -` gibi işaretler İngilizce düzendekinden farklı tuşlara düşer. Parolanda özel karakter varsa ve düzen beklediğinden farklıysa doğru parolayı yazdığın hâlde giremezsin — üstelik ekranda yıldız göründüğü için sebebini de göremezsin. İki korunma yolu: kurulumda hangi düzeni seçtiğini not et, ya da parolayı yalnızca harf ve rakamdan kur (politika zaten büyük/küçük harf + rakam istiyor, özel karakter şart değil). Aynı tuzak LUKS parolası için de geçerli ve orada bedeli daha ağır: diski açamazsan kurulumu baştan yapmak zorunda kalırsın.
+
+### Kurulumdan sonra GUI kalıntısı sızmadığını doğrulama
+```bash
+dpkg -l | grep -iE 'xserver|wayland|gnome|xfce'
+```
+Bu komut boş dönmeli. Bir şey listelenirse `sudo apt purge <paket>` ile kaldır — GUI kalıntısı savunmada doğrudan not kaybı demektir, kurulumdan hemen sonra kontrol etmeyi alışkanlık haline getir.
+
+### Kurulum bitince muhtemelen elle kurman gereken paketler
+Minimal netinstall'da "SSH server" + "standard system utilities" dışında çoğu şey yok — özellikle `sudo` ve `ufw` çoğu zaman kurulu GELMEZ:
+```bash
+apt install sudo ufw
+```
+(root olarak, çünkü henüz sudo yok). Bu adım atlanırsa bölüm 7 (firewall) ve bölüm 11 (sudo) çalışmaya başlayamaz bile.
+
+### Kurulumdan sonraki iş sırası
+Karışmasın diye net bir sıra: (1) GUI kalıntısı var mı diye bak, (2) root'a geçip `sudo` ve `ufw` paketlerini kur, kendini sudo grubuna ekle, (3) SSH'ı 4242'ye taşıyıp port yönlendirmeyi ayarla ve ana makineden bağlanabildiğini doğrula. Üçüncü adım bittiği anda projenin geri kalanını host terminalinden, kopyala-yapıştır ederek yapabilirsin (bölüm 6) — bu yüzden onu erkene almak baştaki en kârlı yatırımdır.
+
+### İlk açılışta root'a geçmek ve dosyaları düzenlemek
+Kurulumdan sonra kendi kullanıcınla giriş yaparsın, ama o kullanıcı henüz sudo grubunda değildir. Root'a şöyle geçersin:
+```bash
+su -
+```
+(kurulumda belirlediğin root parolasını ister; `-` işareti root'un kendi ortamını da yükler). Root'ken `apt install sudo ufw` yapar, kendini sudo grubuna ekler (bölüm 9), sonra `exit` ile kendi kullanıcına dönersin.
+
+Config dosyalarını düzenlemek için grafik arayüz olmadığından terminal editörü kullanacaksın: `nano` (basit; kaydet Ctrl+O, çık Ctrl+X) ya da `vim`. Minimal kurulumda ikisi de gelmemiş olabilir, o zaman `apt install nano` yeterli. Tek istisna sudoers dosyasıdır: ona hiçbir zaman doğrudan editörle dokunma, `visudo` kullan (bölüm 11).
+
+## 4. Disk Partisyonlama: LVM ve Şifreleme
+
+### Partition, dosya sistemi, mount point temel kavramları
+Partition, bir diskin ayrılmış bölümüdür. Dosya sistemi (ext4 gibi) o bölüme nasıl dosya yazılıp okunacağını belirler. Mount point, o bölümün Linux dizin ağacında NEREDE görüneceğidir (ör. /boot, /, /home). /boot çekirdek dosyalarını tutar ve genelde ŞİFRELENMEZ (bootloader'ın okuyabilmesi gerekir); geri kalan her şey şifreli LVM içinde olabilir.
+
+### LVM: Physical Volume / Volume Group / Logical Volume ilişkisi
+LVM (Logical Volume Manager), diskleri esnek şekilde bölümlemeni sağlayan bir katmandır. Physical Volume (PV): LVM'e verilen ham disk/partition. Volume Group (VG): birden fazla PV'nin birleştiği havuz. Logical Volume (LV): bu havuzdan kestiğin, gerçek mount edilebilir "sanal partition". Zincir: disk → PV → VG → LV → dosya sistemi → mount point.
+
+### LUKS ile disk şifreleme mantığı
+LUKS (Linux Unified Key Setup), Linux'ta disk şifrelemesinin standardıdır. Şifreli bir partition açılışta parola istemeden mount edilemez — disk çalınsa bile içerik okunamaz. Bu projede LVM, LUKS'un ÜZERİNE kurulur: önce partition LUKS ile şifrelenir (sda5_crypt gibi bir "crypt" cihazı oluşur), sonra o cihazın İÇİNE LVM (PV/VG/LV) kurulur. Sıralama: partition → LUKS şifreleme → LVM → dosya sistemleri.
+
+### "En az 2 şifreli bölüm" ne demek
+Subject'in istediği, diskte iki ayrı şifreli kap açman değil: tek bir LUKS kabının içinde LVM ile en az iki mantıksal birim (LV) oluşturman yeterlidir. Aşağıdaki şemada root, swap ve home diye üç LV var; üçü de aynı şifreli kabın içinde olduğu için üçü de şifrelidir ve şart fazlasıyla karşılanır. /boot bunun dışındadır, sayıya dahil değildir.
+
+### En az 2 şifreli LVM partisyonu kurulum sihirbazında nasıl oluşturulur
+Debian kurulumunda "Manuel" partisyonlamayı seç > diskte küçük bir /boot partition'ı ayır (şifrelenmeyecek) > kalan alanı "şifreli birim yapılandır" ile şifrele, bir parola belirle (unutma, disk kilidini bu açar) > şifreli alanı "LVM birimi yapılandır" ile PV yap, bir VG oluştur > VG içinde root, swap, home için ayrı LV'ler oluştur, her birine dosya sistemi (ext4, swap) ve mount point ata. DİKKAT: burada belirlediğin şifreleme parolası, ileride kullanıcı hesabına gireceğin login parolasıyla AYNI ŞEY DEĞİL — bu, VM her açıldığında diski kilidinden çıkarmak için sorulan, tamamen ayrı bir parola.
+
+### Örnek şema (/boot, root, swap, home) ve boyutlandırma ilkesi
+Örnek: /boot (500MB, şifresiz) + şifreli LVM içinde root (~10GB), swap (RAM'in 1-2 katı; 1-2GB RAM'de 2GB swap yeterli), home (kalan alan). Subject'teki örnek 8GB'lık bir diskte veriliyor — SEN kendi disk boyutuna göre ORANLA, örneği birebir kopyalama. "Gereksiz yer kaplama" uyarısını ciddiye al: aşırı büyük swap ya da gereksiz büyük root, savunmada "neden bu kadar" sorusunu doğurur.
+
+### Kurulum sihirbazının arka planda yaptığının komut karşılığı (kavramsal)
+```bash
+cryptsetup luksFormat /dev/sda5
+cryptsetup open /dev/sda5 sda5_crypt
+pvcreate /dev/mapper/sda5_crypt
+vgcreate VGname /dev/mapper/sda5_crypt
+lvcreate -L 10G -n root VGname
+lvcreate -L 2G  -n swap VGname
+lvcreate -l 100%FREE -n home VGname
+```
+Sihirbaz bunu tıklamalarla senin için yapıyor; bu komutları görmek LVM'in NEDEN tercih edildiğini de açıklıyor: `lvextend` ile ileride bir LV'yi disk yeniden partitionlamadan büyütebilirsin — ham partition'larla bu mümkün değildir.
+
+### Doğrulama komutları: lsblk, pvs, vgs, lvs
+```bash
+lsblk   # disk/partition/LV ağacını gösterir
+pvs     # Physical Volume'leri listeler
+vgs     # Volume Group'ları listeler
+lvs     # Logical Volume'leri listeler
+```
+Kurulum bittikten sonra bu dört komutla yapının beklediğin gibi olduğunu doğrula; savunmada da aynı komutlarla "LVM aktif mi" sorusuna canlı cevap vereceksin.
+
+## 5. Zorunlu Erişim Kontrolü: AppArmor vs SELinux
+
+### DAC ile MAC (Mandatory Access Control) farkı
+Discretionary Access Control (DAC), klasik Linux izin sistemidir (rwx, kullanıcı/grup) — dosyanın SAHİBİ izinleri belirler. Mandatory Access Control (MAC) ise sistem çapında, kullanıcının bile değiştiremeyeceği ek bir kural katmanıdır: "bu program SADECE şu dosyalara, şu şekilde erişebilir" diye merkezi politika dayatır. Bir servis ele geçirilse bile MAC, saldırganın sistemin geri kalanına sıçramasını engeller.
+
+### AppArmor: profil mantığı, aa-status, Debian'da açılışta aktiflik
+Debian'ın varsayılan MAC aracıdır. Profil tabanlı çalışır: her uygulama için `/etc/apparmor.d/` altında bir profil dosyası, o uygulamanın hangi dosyalara okuma/yazma/çalıştırma izni olduğunu tanımlar.
+```bash
+sudo aa-status
+```
+Bu komut kaç profilin "enforce" (zorlanan) ve kaç tanesinin "complain" (sadece loglanan) modda olduğunu gösterir. Açılışta otomatik başlaması için servisin systemctl ile enabled olması gerekir.
+
+### SELinux: enforcing/permissive modları, sestatus
+Rocky'nin varsayılan MAC aracıdır, AppArmor'dan daha ayrıntılıdır: dosya YOLUNA değil, dosyanın "context" (etiket) bilgisine göre çalışır. İki ana modu vardır: enforcing (kurallar zorlanır) ve permissive (ihlaller sadece loglanır).
+```bash
+sestatus
+```
+
+### Rocky özel durumu: KDump gerekmez, ama SELinux zorunlu
+Subject, Rocky'nin SELinux'u enforcing modda ve açılışta aktif tutmasını şart koşuyor (KDump kurulumunu ise muaf tutuyor). Rocky'ye gitmeyeceğin için README karşılaştırması açısından bu kadarını bilmen yeterli.
+
+### Savunmada "bu ne işe yarar" sorusuna hazırlık
+Muhtemel soru: "AppArmor/SELinux ne işe yarar, neden var?" Tek cümlelik cevap: "Kullanıcı izinlerinin ötesinde, sistem çapında bir programın erişebileceği kaynakları sınırlayan zorunlu bir güvenlik katmanı; bir servis ele geçirilse bile hasarı sınırlar."
+
+## 6. SSH Servisi ve Uzaktan Erişim Güvenliği
+
+### SSH'ın çalışma mantığı (kısaca)
+SSH (Secure Shell), bir makineye ağ üzerinden şifreli şekilde uzaktan komut satırı erişimi sağlayan protokol/servistir. Sunucu tarafında sshd (SSH daemon) dinlemede olur, istemci `ssh` komutuyla bağlanır. Bu proje SSH'ı savunmanın omurgası yapar: değerlendirici VM'ine SSH ile bağlanıp gerçek zamanlı test yapacak.
+
+### sshd_config üzerinden port değişikliği (22 → 4242)
+`/etc/ssh/sshd_config` dosyasında:
+```
+Port 4242
+```
+satırını ekle/düzenle. Değişiklikten sonra servisi yeniden başlat:
+```bash
+sudo systemctl restart sshd
+```
+
+### Root ile SSH girişinin kapatılması (PermitRootLogin no)
+Aynı dosyada:
+```
+PermitRootLogin no
+```
+Bu, root'un doğrudan SSH ile giriş yapmasını engeller — root'a HER ZAMAN normal kullanıcı+sudo üzerinden erişilmeli, asla doğrudan değil.
+
+### Servisi yeniden başlatma ve port dinlediğini doğrulama (ss -tunlp)
+```bash
+sudo systemctl restart sshd
+ss -tunlp | grep 4242
+```
+Çıktıda 4242 portunun LISTEN durumda ve sshd'ye ait olduğunu görmelisin.
+
+### Önce SSH'ı ayarla, gerisini host'tan bağlanarak yap
+VirtualBox penceresi ile ana makinen arasında pano paylaşımı yoktur: VM konsolunda her şeyi harf harf elle yazarsın, uzun bir `secure_path` satırını ya da pwquality kurallarını böyle yazmak hem yorucu hem hataya açıktır. Bu yüzden SSH, kurulum sonrası sıradaki üçüncü ama en kârlı adımdır (bu bölüm + bölüm 1'deki port yönlendirme; sıranın tamamı bölüm 3'te). SSH çalışır çalışmaz ana makinenin kendi terminalinden bağlanırsın:
+```bash
+ssh login@127.0.0.1 -p 4242
+```
+Artık kopyala-yapıştır, kaydırma ve düzgün bir terminal kullanabilirsin; projenin geri kalanını böyle yapmak hem çok daha hızlıdır hem yazım hatalarını keser. Ayrıca SSH'ın gerçekten dışarıdan çalıştığını da her gün doğrulamış olursun.
+
+### Savunmada yeni hesapla bağlantı testi
+Değerlendirici "yeni bir hesap açalım, onunla SSH ile bağlanalım" diyecek — yani hem kullanıcı açma pratiğini hem SSH'ın gerçekten 4242'de ve root'suz çalıştığını AYNI ANDA test ediyor. Bu ikisini birlikte prova et.
+
+## 7. Güvenlik Duvarı: UFW vs firewalld
+
+### Firewall mantığı: varsayılan red, istisna izin
+Bir firewall, gelen/giden ağ trafiğini kurallara göre süzer. Bu projede felsefe "varsayılan red, istisna izin": HER ŞEYİ kapat, sadece ihtiyacın olan tek portu (4242) aç.
+
+### UFW ile sadece 4242 portunu açma (Debian)
+```bash
+sudo ufw allow 4242/tcp
+sudo ufw enable
+sudo ufw status
+```
+UFW (Uncomplicated Firewall), Debian'da iptables'ı basitleştiren bir ön yüzdür.
+
+### firewalld ile zone / service / port kavramları (Rocky)
+```bash
+sudo firewall-cmd --permanent --add-port=4242/tcp
+sudo firewall-cmd --reload
+sudo firewall-cmd --list-port
+```
+UFW'den farklı olarak "zone" (bölge) kavramı vardır — her arayüz bir zone'a atanır, kurallar zone bazlı tanımlanır. `--permanent` olmadan yaptığın değişiklik reboot'ta kaybolur, `--reload` ile devreye alınır.
+
+### Açılışta otomatik aktif olacak şekilde servis etkinleştirme
+```bash
+sudo systemctl enable ufw        # Debian
+sudo systemctl enable firewalld  # Rocky
+```
+Subject açıkça "firewall VM başlar başlamaz aktif olmalı" diyor — enable etmeyi unutursan reboot sonrası firewall kapalı kalır, ciddi puan kaybı olur.
+
+### Durum doğrulama: ufw status, firewall-cmd --state / --list-port
+```bash
+sudo ufw status
+sudo firewall-cmd --state
+sudo firewall-cmd --list-port
+```
+Savunmadan hemen önce bu kontrolü alışkanlık haline getir.
+
+## 8. Hostname Yapılandırması
+
+### hostname, /etc/hostname, /etc/hosts ilişkisi
+`/etc/hostname` makinenin adını tek satır olarak tutar. `/etc/hosts` ise IP-isim eşleşmelerini tutar; genelde 127.0.1.1 satırında hostname'in de geçmesi gerekir, yoksa bazı komutlar (sudo dahil) yavaşlar/hata verir.
+
+### login+42 formatı (örnek: hyahyato42)
+Hostname'in 42 login'in + "42" olması gerekiyor (subject'teki örnek wil42; senin login'ine göre kendi karşılığını kullan).
+
+### Kalıcı değiştirme (hostnamectl) ve savunmada anlık değiştirme farkı
+```bash
+sudo hostnamectl set-hostname yenihostname
+```
+Bu komut hem `/etc/hostname`'i günceller hem anlık uygular (reboot gerekmez, ama yeni terminal/oturum açman gerekebilir). Subject, savunma sırasında hostname'i DEĞİŞTİRTECEĞİNİ söylüyor — bu komutu ezbere bilmen gerekiyor, çünkü canlı, izlenerek yapacaksın.
+
+## 9. Kullanıcı ve Grup Yönetimi
+
+### root dışında kendi login'inle kullanıcı açma
+```bash
+sudo adduser login
+```
+`adduser` (Debian'a özgü, etkileşimli, "dostane") ya da `useradd -m login` (daha ham, manuel parola atama gerektirir) ile root dışında, kendi login'inle bir kullanıcı açarsın.
+
+### user42 ve sudo gruplarına ekleme (usermod -aG)
+```bash
+sudo usermod -aG user42 login
+sudo usermod -aG sudo login
+```
+`-a` (append/ekle) ÇOK KRİTİK: `-a` olmadan `-G` kullanırsan kullanıcının var olan TÜM ikincil gruplarını SİLİP sadece belirttiğin grupla değiştirirsin — tipik ve ciddi bir tuzak.
+
+### groups, id komutlarıyla doğrulama
+```bash
+groups login
+id login
+```
+`groups`, kullanıcının üye olduğu tüm grupları listeler; `id` hem kullanıcı hem grup ID'lerini (UID/GID) gösterir. Her ikisinde de user42 ve sudo görünmeli.
+
+### Savunmada yeni kullanıcı oluşturup gruba atama pratiği
+Değerlendirici senden CANLI yeni bir kullanıcı açıp bir gruba atamanı isteyecek. `adduser` + `usermod -aG` komutlarını ezbere, tereddütsüz yazabilmen gerekiyor — subject'te açıkça "peer review'da test edileceği" yazan iki maddeden biri.
+
+## 10. Parola Politikası: PAM, login.defs, chage
+
+### PAM'in rolü (kısaca)
+PAM (Pluggable Authentication Modules), Linux'ta kimlik doğrulamayı merkezi, eklenti tabanlı modüllerle çözen bir çerçevedir. Parola karmaşıklık kuralları (pam_pwquality gibi) PAM modülleri aracılığıyla `/etc/pam.d/common-password` (Debian) dosyasına eklenir.
+
+### /etc/login.defs: PASS_MAX_DAYS (30), PASS_MIN_DAYS (2), PASS_WARN_AGE (7)
+```
+PASS_MAX_DAYS   30
+PASS_MIN_DAYS   2
+PASS_WARN_AGE   7
+```
+PASS_MAX_DAYS: parolanın kaç günde bir zorunlu süresi dolsun. PASS_MIN_DAYS: değiştirdikten sonra tekrar değiştirmeden önceki minimum bekleme (kullanıcının parolayı art arda değiştirip eski parolaya "dönmesini" engeller). PASS_WARN_AGE: süre dolmadan kaç gün önce uyarı verilsin. DİKKAT: bu dosya sadece YENİ kullanıcılara varsayılan olur — VAR OLAN kullanıcılara (root dahil) `chage` ile AYRICA uygulaman gerekir.
+
+### pam_pwquality ile karmaşıklık: min 10 karakter, büyük/küçük harf + rakam, 3'ten fazla ardışık aynı karakter yasağı
+`/etc/security/pwquality.conf` içinde:
+```
+minlen = 10
+ucredit = -1
+lcredit = -1
+dcredit = -1
+maxrepeat = 3
+```
+minlen: minimum uzunluk. ucredit/lcredit/dcredit = -1: sırasıyla en az 1 büyük harf, 1 küçük harf, 1 rakam ZORUNLU (eksi değer "zorunlu" demektir — kafa karıştırıcı ama ezberlenmesi gereken bir PAM tuhaflığı). maxrepeat = 3: 3'ten fazla ardışık AYNI karakter yasak.
+
+### Kullanıcı adını parolada yasaklama
+```
+reject_username
+enforce_for_root
+```
+`reject_username`, parolanın kullanıcı adını içermesini engeller. `enforce_for_root` OLMADAN bu kurallar ROOT'a UYGULANMAZ — subject "root parolası da bu politikaya uymalı" dediği için bu satırı eklemen gerekiyor, sıkça unutulan bir ayrıntı.
+
+### difok kuralı: yeni parolanın eskisinden en az 7 karakter farklı olması (root hariç)
+```
+difok = 7
+```
+Subject bunun ROOT'a uygulanmayacağını AÇIKÇA belirtiyor — tek istisna budur.
+
+### Politika sonrası TÜM hesapların (root dahil) parolasının değiştirilmesi
+Bütün kuralları yazdıktan sonra, sistemde zaten var olan hesapların parolaları henüz yeni kurallara göre belirlenmemiştir. Subject açıkça, config bitince TÜM parolaları (root dahil) YENİDEN değiştirmeni istiyor:
+```bash
+sudo passwd root
+sudo passwd login
+```
+
+### Var olan hesaplara login.defs değerlerini chage ile geriye dönük uygulama
+login.defs sadece YENİ oluşturulacak kullanıcıları etkiler; root ve senin kullanıcın zaten VARDI, o yüzden onlara elle vermen gerekir:
+```bash
+sudo chage -M 30 -m 2 -W 7 root
+sudo chage -M 30 -m 2 -W 7 login
+```
+-M: max gün, -m: min gün, -W: uyarı günü — login.defs'teki üç değerin var olan hesaplara uygulanma yolu budur, atlanırsa politika sadece kağıt üzerinde kalır.
+
+### chage -l ile doğrulama
+```bash
+sudo chage -l login
+```
+Bir kullanıcının parola yaşlanma bilgilerini (son değişiklik, max/min gün, uyarı günü) gösterir — hem kendi kontrolün hem savunmada "politika gerçekten uygulanmış mı" kanıtı için kullanılır.
+
+## 11. sudo Yapılandırması ve Loglama
+
+### sudoers dosyasını sadece visudo ile düzenlemenin önemi
+```bash
+sudo visudo
+```
+sudoers dosyasını DOĞRUDAN bir editörle AÇMA — sözdizimi hatası sudo'yu TAMAMEN kilitleyebilir, root bile düzeltemez. visudo, kaydetmeden önce sözdizimini kontrol eder. Bu proje için `/etc/sudoers.d/` altına ayrı bir dosya oluşturmak, ana sudoers dosyasını bozma riskini azaltır.
+
+### passwd_tries=3 ile deneme sınırı
+```
+Defaults passwd_tries=3
+```
+Yanlış parola girişini 3 denemeyle sınırlar.
+
+### Yanlış parolada özel mesaj (badpass_message)
+```
+Defaults badpass_message="Kendi mesajın buraya"
+```
+Subject "kendi seçtiğin bir mesaj" diyor — serbest metin, ezbere bir cümle hazırla.
+
+### log_input / log_output ile /var/log/sudo/ altına loglama
+log_input / log_output ile TAM oturum (yazdığın komutlar VE ekrana basılan çıktı) kaydedilir. Bu kayıtların nereye yazılacağını iolog_dir belirler:
+```
+Defaults log_input, log_output
+Defaults iolog_dir="/var/log/sudo/"
+```
+`/var/log/sudo/` klasörünü önce sen oluşturmalısın (`sudo mkdir -p /var/log/sudo`). Kayıtları `sudoreplay <id>` ile bir video gibi geri oynatabilirsin — I/O logging'in ayırt edici özelliği budur.
+
+### requiretty (TTY modu)
+```
+Defaults requiretty
+```
+sudo'nun sadece gerçek bir terminal (TTY) üzerinden çalıştırılmasını zorunlu kılar — arka plandaki script'ler sudo çalıştıramaz, bir güvenlik önlemidir.
+
+### secure_path ile PATH kısıtlama
+```
+Defaults secure_path="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin"
+```
+sudo çalıştırılırken kullanılabilecek PATH'i bu listeyle sınırlar — kullanıcının kendi PATH'ine sızdırdığı zararlı bir "sahte" binary'nin sudo ile çalıştırılmasını engeller.
+
+## 12. monitoring.sh: İzleme Betiği ve Cron
+
+### Betiğin görevi ve wall komutunun rolü
+Betiğin görevi sistem durumunu (CPU, RAM, disk, ağ vb.) TÜM açık terminallere yayınlamaktır. Bunu `wall` komutu yapar — sistemdeki tüm oturum açmış kullanıcıların terminaline mesaj basar (broadcast).
+
+### İstenen bilgi kalemleri ↔ hangi komut/dosya eşleştirmesi
+```
+Mimari/kernel     : uname -a
+Fiziksel CPU      : lscpu | grep "Socket(s)"
+vCPU              : nproc
+RAM kullanımı     : free -m
+Disk kullanımı    : df -h /
+CPU yükü          : top -bn1 | grep "Cpu(s)"  (mpstat de olur ama sysstat paketi ister)
+Son reboot        : who -b  (ya da uptime -s)
+LVM aktif mi      : lsblk | grep lvm  (ya da vgs)
+Aktif bağlantı    : ss -ta | grep ESTAB | wc -l
+Kullanıcı sayısı  : who | wc -l
+IP + MAC          : ip a  (tek komut yeter — "inet" satırı IP, "link/ether" satırı MAC)
+sudo komut sayısı : /var/log/sudo/ log dosyasındaki satır/komut sayısı
+```
+Bu tablo bölüm 11'deki log_output ile bağlantılı: sudo sayacı için orada kurduğun log dosyasını grep'leyeceksin.
+
+### Betiği çalıştırılabilir yapma: shebang ve chmod
+Betiğin en üstüne `#!/bin/bash` (shebang) satırını koy, sonra çalıştırma izni ver:
+```bash
+chmod +x /usr/local/bin/monitoring.sh
+```
+Bu ikisi olmadan cron betiği DOĞRUDAN çalıştıramaz — "yazdığım script çalışmıyor" şikayetlerinin en sık nedeni budur.
+
+### Açılışta ve her 10 dakikada çalıştırma: cron (@reboot, */10 * * * *)
+```bash
+crontab -e
+```
+```
+@reboot /usr/local/bin/monitoring.sh
+*/10 * * * * /usr/local/bin/monitoring.sh
+```
+İlk satır açılışta bir kez, ikinci satır her 10 dakikada bir çalıştırır.
+
+### Savunmada betiği değiştirmeden durdurma
+Subject "script'i DEĞİŞTİRMEDEN durdurman isteneceğini" söylüyor. Cevap script'i silmek/düzenlemek DEĞİL — cron job'unu geçici devre dışı bırakmaktır:
+```bash
+crontab -e   # ilgili satırın başına # koy, kaydet
+```
+
+### Hatasız (stderr'siz) çalışmayı garanti etme
+Değişkenlerin boş dönebileceği durumları (ör. hiç sudo komutu çalıştırılmamışsa log dosyası boş) kontrol et, bulunamayan komutlardan hata basmasını engelle — subject "hiçbir hata gösterilmemeli" diyor, bu kelimenin tam anlamıyla ciddiye alınmalı.
+
+## 13. README.md Hazırlığı
+
+### Zorunlu ilk italik satır formatı
+README.md'nin İLK satırı İTALİK ve tam şu formatta olmalı:
+```
+*This project has been created as part of the 42 curriculum by <login>.*
+```
+Birden fazla kişi varsa virgülle ayrılır.
+
+### Description, Instructions, Resources bölümlerinin içeriği
+Description: projenin ne olduğu, amacı, genel bakış. Instructions: kurulum/çalıştırma bilgisi. Resources: kullanılan dokümantasyon/makale linkleri VE AI'nin hangi görevler için, projenin hangi kısımlarında kullanıldığının DÜRÜST açıklaması.
+
+### İstenen dört karşılaştırma: Debian/Rocky, AppArmor/SELinux, UFW/firewalld, VirtualBox/UTM
+Project description bölümünde ZORUNLU dört karşılaştırma budur. Bu rehberdeki ilgili başlıkları (2, 5, 7, 1) doğrudan bu bölümün taslağı olarak kullanabilirsin.
+
+### AI kullanımının Resources bölümünde dürüstçe belgelenmesi
+Subject'in kendi AI politikasıyla birebir örtüşen bir zorunluluk: hangi görevde, ne kadar, nasıl AI kullandığını AÇIKÇA yaz. Saklamak ya da belirsiz bırakmak hem dürüstlük hem değerlendirme açısından risk taşır.
+
+### Dil seçimi
+İngilizce önerilir; alternatif olarak kampüsünün ana dili de kabul edilir.
+
+## 14. Teslim Süreci: signature.txt ve Savunma
+
+### Neden sadece README.md + signature.txt teslim edilir
+VM'in kendisi asla repoya girmez; sadece bu iki dosya yeterlidir çünkü değerlendirme senin FİZİKSEL VM'in üzerinden canlı yapılır, dosyalar sadece kimlik doğrulama ve dokümantasyon içindir.
+
+### İşletim sistemine göre imza alma komutları (Windows/Linux/Mac)
+```bash
+# Windows
+certUtil -hashfile diskadi.vdi sha1
+# Linux
+sha1sum diskadi.vdi
+# Mac (Intel)
+shasum diskadi.vdi
+# Mac M1 (UTM)
+shasum diskadi.utm/Images/disk-0.qcow2
+```
+
+### VM her açıldığında imzanın değişmesi — disk kopyalama veya snapshot stratejisi
+VM'i her başlattığında disk dosyası değişir, yani sha1 imzası da değişir. Çözüm: (a) disk dosyasının bir KOPYASINI ayrı tut, imzayı o kopyadan al, VEYA (b) her değerlendirme öncesi bir SNAPSHOT al, imzayı o snapshot anındaki diskten hesapla.
+
+### Snapshot kısıtlaması: savunma başında snapshot olmamalı
+Her savunma SNAPSHOT'SIZ başlamalı. Savunmaya özel bir snapshot savunma başında alınır, savunma bitince SİLİNİR. Bu mantığı savunmadan önce mutlaka pratik et.
+
+### Savunmada beklenebilecek canlı görevler
+Toparlarsak: hostname değiştirme (bölüm 8), yeni kullanıcı açıp gruba atama (bölüm 9), o kullanıcıyla SSH bağlantısı kurma (bölüm 6), monitoring.sh'i değiştirmeden durdurma (bölüm 12), ve genel olarak küçük bir kod/config değişikliği. Hepsini VM üzerinde en az bir kez PRATİK ET.
+
+## 15. Savunma (Evo) Soru-Cevap Bankası
+42'de savunma, projeni anlatıp evocunun sorularını canlı cevaplaman şeklinde işler. Aşağıdakiler bu malumatnamedeki konulara özel, gerçekten sorulması muhtemel sorular — ezberlemek için değil, kendi cümlelerinle yeniden üretebilmek için oku. "(canlı)" işaretli olanlar subject'te açıkça "peer review'da test edilecek" diye geçenler.
+
+### Genel / Kavramsal
+S: Bu proje ne yapıyor, kısaca anlat?
+C: VirtualBox'ta minimal, GUI'siz bir Debian sunucusu kurup LVM+şifreleme, AppArmor, sıkı SSH/firewall/parola/sudo kuralları ve bir izleme betiğiyle güvenli hale getirdim.
+
+S: Neden GUI kurulu değil?
+C: Sunucu arka planda hizmet veriyor, önünde oturulmuyor; X.org/Wayland gereksiz kaynak tüketir ve saldırı yüzeyini büyütür — subject bunu 0 puanla cezalandırıyor.
+
+### İşletim Sistemi
+S: Debian mı Rocky mi kullandın, neden?
+C: Debian — sistem yönetimine yeniyim, subject de bunu öneriyor; ayrıca Ubuntu'yla çalışacağım için apt/dpkg/systemd/AppArmor bilgim doğrudan buraya taşınıyor.
+
+S: apt ile aptitude farkı ne?
+C: İkisi de dpkg'yi kullanır; apt daha basit/modern bağımlılık çözümü sunar, aptitude farklı bir çözme stratejisi ve interaktif arayüzle gelen alternatif bir ön yüzdür.
+
+### Partisyonlama / LVM / Şifreleme
+S: LVM nedir, neden kullandın?
+C: Disk alanını PV→VG→LV katmanlarıyla esnek yöneten bir yönetim katmanı; `lvextend` ile bir LV'yi disk yeniden bölümlemeden büyütebiliyorsun.
+
+S: Şifreleme parolan ile login parolan aynı mı?
+C: Hayır — biri (LUKS) diski açılışta kilitten çıkarıyor, diğeri sisteme giriş yapıyor; tamamen ayrı iki parola.
+
+S: LVM aktif mi, nasıl gösterirsin?
+C: `lsblk`, `pvs`, `vgs`, `lvs` — dördü birlikte PV/VG/LV zincirini gösterir.
+
+### Güvenlik Çerçevesi
+S: AppArmor ne işe yarar?
+C: Kullanıcı izinlerinin ötesinde, sistem çapında bir programın erişebileceği dosyaları profil bazlı sınırlayan zorunlu bir güvenlik katmanı (MAC); bir servis ele geçirilse bile hasarı sınırlar.
+
+S: AppArmor açık mı, nasıl kontrol edersin?
+C: `sudo aa-status` — kaç profilin enforce modda olduğunu gösterir.
+
+### SSH
+S: SSH hangi portta, neden root ile bağlanamıyorsun?
+C: 4242'de; root'a doğrudan SSH girişini kapattım (PermitRootLogin no) çünkü root'a HER ZAMAN normal kullanıcı+sudo üzerinden erişilmeli.
+
+### Firewall
+S: Firewall'da hangi portlar açık?
+C: Sadece 4242/tcp — her şey varsayılan kapalı, tek istisna bu.
+
+### Hostname
+S: (canlı) Hostname'i değiştir.
+C: `sudo hostnamectl set-hostname yenisim` — hem dosyayı günceller hem anlık uygular.
+
+### Kullanıcı / Grup
+S: (canlı) Yeni kullanıcı aç, bir gruba ata.
+C: `sudo adduser isim`, sonra `sudo usermod -aG grupadi isim` — `-a` olmadan kullanıcının var olan grupları silinir, bu yüzden hep birlikte kullanılır.
+
+### Parola Politikası
+S: Parola politikan neleri kapsıyor?
+C: 30 günde zorunlu değişim, değişimler arası min 2 gün, 7 gün önce uyarı, min 10 karakter + büyük/küçük harf + rakam, 3'ten fazla ardışık karakter yasak, kullanıcı adı içeremez, root hariç yeni parola eskisinden en az 7 karakter farklı olmalı.
+
+S: Bu kuralları var olan hesaplara nasıl uyguladın?
+C: login.defs ve pwquality.conf sadece YENİ kullanıcıları etkiler; root ve kendi hesabıma `chage -M 30 -m 2 -W 7` ile elle uyguladım.
+
+### sudo
+S: sudo loglarını nereden görürsün?
+C: /var/log/sudo/ altında; log_input/log_output ile hem komut hem çıktı kaydediliyor, sudoreplay ile tekrar oynatılabiliyor.
+
+### monitoring.sh
+S: (canlı) monitoring.sh nasıl çalışıyor, açıkla.
+C: cron ile açılışta bir kez (@reboot) ve her 10 dakikada bir (*/10 * * * *) çalışıyor, wall ile CPU/RAM/disk/LVM/bağlantı/kullanıcı/IP-MAC/sudo sayacını tüm terminallere yayınlıyor.
+
+S: (canlı) Betiği DEĞİŞTİRMEDEN durdur.
+C: `crontab -e` ile ilgili satırın başına # koyup kaydediyorum — dosyaya dokunmuyorum, sadece zamanlamayı devre dışı bırakıyorum.
+
+### Teslim / Savunma Mekaniği
+S: signature.txt ne işe yarar?
+C: VM diskimin sha1 özeti; değerlendirici bunu canlı VM'imle karşılaştırıp gerçekten benim ürettiğim makine olduğunu doğruluyor.
+
+S: Savunma öncesi VM'de snapshot olmalı mı?
+C: Hayır, snapshot'sız başlamalı; savunmaya özel snapshot savunma sırasında alınıp sonunda siliniyor.
+
+## Ek — Hızlı Referans
+
+### Sık karışan terimlerin tek satırlık tanımları
+```
+LVM      : Esnek disk/partition yönetim katmanı (PV → VG → LV)
+LUKS     : Linux disk şifreleme standardı
+PAM      : Eklenti tabanlı kimlik doğrulama çerçevesi
+MAC      : Mandatory Access Control — sistem çapında zorunlu erişim kısıtı
+DAC      : Discretionary Access Control — klasik sahip/izin sistemi
+TTY      : Gerçek bir terminal oturumu
+cron     : Zamanlanmış görev çalıştırıcı
+systemd  : Modern Linux servis/başlatma yöneticisi (systemctl ile kontrol edilir)
+```
+
+### Hızlı doğrulama komutları listesi
+```bash
+sestatus              # SELinux durumu (Rocky)
+aa-status              # AppArmor durumu (Debian)
+ufw status             # Firewall durumu (Debian)
+firewall-cmd --state   # Firewall durumu (Rocky)
+ss -tunlp               # Açık portlar
+chage -l login         # Parola politikası durumu
+crontab -l             # Zamanlanmış görevler
+lsblk / vgs / lvs       # LVM yapısı
+```
+
+### Savunmadan önce son gözden geçirme kontrol listesi
+(1) VM'de hiçbir snapshot yok mu kontrol et. (2) `ss -tunlp` ile sadece 4242'nin açık olduğunu doğrula. (3) `aa-status` ile AppArmor'ın enforce/aktif olduğunu doğrula. (4) `chage -l` ile parola politikasının TÜM hesaplara (root dahil) uygulandığını doğrula. (5) `crontab -l` ile monitoring.sh'in kayıtlı olduğunu doğrula. (6) `hostnamectl status` ile hostname'in doğru formatta olduğunu doğrula.
+
+</script>
+<script>
+/* ==========================================================================
+   Born2beRoot Malumatnamesi — uygulama motoru
+   ========================================================================== */
+
+/* ---------- Depolama: localStorage yoksa hafızaya düşer ---------- */
+const depo = (() => {
+  let calisir = true;
+  try { localStorage.setItem("b2r.deneme", "1"); localStorage.removeItem("b2r.deneme"); }
+  catch (e) { calisir = false; }
+  const yedek = {};
+  return {
+    oku(anahtar, varsayilan) {
+      try { const d = calisir ? localStorage.getItem(anahtar) : yedek[anahtar];
+            return d == null ? varsayilan : JSON.parse(d); }
+      catch (e) { return varsayilan; }
+    },
+    yaz(anahtar, deger) {
+      const d = JSON.stringify(deger);
+      try { if (calisir) localStorage.setItem(anahtar, d); else yedek[anahtar] = d; }
+      catch (e) { yedek[anahtar] = d; }
+    }
+  };
+})();
+
+/* ---------- Gece / gündüz modu ---------- */
+const AY_IKON = '<svg viewBox="0 0 24 24"><path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5Z"/></svg>';
+const GUNES_IKON = '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M4.2 4.2l1.6 1.6M18.2 18.2l1.6 1.6M2.6 12h2.2M19.2 12h2.2M4.2 19.8l1.6-1.6M18.2 5.8l1.6-1.6"/></svg>';
+
+function moduUygula(mod) {
+  document.documentElement.dataset.mod = mod;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", mod === "gunduz" ? "#EBEFF3" : "#0F1720");
+  const d = document.getElementById("modDugme");
+  d.innerHTML = mod === "gunduz" ? AY_IKON : GUNES_IKON;
+  d.setAttribute("aria-label", mod === "gunduz" ? "Gece moduna geç" : "Gündüz moduna geç");
+}
+let aktifMod = depo.oku("b2r.mod", null);
+if (!aktifMod) {
+  aktifMod = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "gunduz" : "gece";
+}
+moduUygula(aktifMod);
+document.getElementById("modDugme").addEventListener("click", () => {
+  aktifMod = aktifMod === "gunduz" ? "gece" : "gunduz";
+  depo.yaz("b2r.mod", aktifMod);
+  moduUygula(aktifMod);
+});
+
+/* ---------- Kaynak metni bölümlere ayır ---------- */
+const kaynakMetin = document.getElementById("kaynak").textContent;
+
+function bolumlereAyir(metin) {
+  const satirlar = metin.split("\n");
+  const bolumler = [];
+  let simdiki = null;
+  let kodIcinde = false;
+  for (const satir of satirlar) {
+    if (satir.startsWith("```")) kodIcinde = !kodIcinde;
+    if (!kodIcinde && satir.startsWith("## ")) {
+      simdiki = { baslik: satir.slice(3).trim(), satirlar: [] };
+      bolumler.push(simdiki);
+    } else if (simdiki) {
+      simdiki.satirlar.push(satir);
+    }
+  }
+  return bolumler.map((b, i) => ({
+    no: i,
+    baslik: b.baslik,
+    kisaBaslik: b.baslik.replace(/^\d+\.\s*/, "").replace(/^(Giriş|Ek)\s+—\s+/, ""),
+    numara: (b.baslik.match(/^(\d+)\./) || [null, null])[1],
+    metin: b.satirlar.join("\n").trim()
+  }));
+}
+const BOLUMLER = bolumlereAyir(kaynakMetin);
+
+/* ---------- Küçük markdown çizici ---------- */
+function kacir(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+function satiriCiz(s) {
+  return kacir(s)
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+}
+function markdownCiz(metin) {
+  const satirlar = metin.split("\n");
+  let html = "", kodIcinde = false, kodTampon = [];
+  for (const satir of satirlar) {
+    if (satir.startsWith("```")) {
+      if (kodIcinde) { html += "<pre><code>" + kacir(kodTampon.join("\n")) + "</code></pre>"; kodTampon = []; }
+      kodIcinde = !kodIcinde;
+      continue;
+    }
+    if (kodIcinde) { kodTampon.push(satir); continue; }
+    if (satir.startsWith("### ")) { html += "<h3>" + satiriCiz(satir.slice(4)) + "</h3>"; continue; }
+    if (satir.trim() === "") continue;
+    html += "<p>" + satiriCiz(satir) + "</p>";
+  }
+  if (kodTampon.length) html += "<pre><code>" + kacir(kodTampon.join("\n")) + "</code></pre>";
+  return html;
+}
+
+/* ---------- Arama indeksi ---------- */
+/* Sözlük satırları ve tablo satırları doğrudan kaynaktan ayrıştırılır,
+   böylece rehber ile uygulama arasında metin farkı oluşmaz. */
+function sozlukAyristir() {
+  const kayitlar = [];
+  const gorulen = new Set();
+  BOLUMLER.forEach(bolum => {
+    const satirlar = bolum.metin.split("\n");
+    let kodIcinde = false;
+    satirlar.forEach(satir => {
+      if (satir.startsWith("```")) { kodIcinde = !kodIcinde; return; }
+      if (!kodIcinde) return;
+      const es = satir.match(/^([^:#]{2,30}?)\s+:\s+(.+)$/);
+      if (!es) return;
+      const terim = es[1].trim(), izah = es[2].trim();
+      const anahtar = terim.toLowerCase();
+      if (gorulen.has(anahtar)) return;
+      gorulen.add(anahtar);
+      kayitlar.push({ terim, izah, bolum: bolum.no, tur: "sozluk" });
+    });
+  });
+  return kayitlar;
+}
+
+/* Kaynakta sözlük satırı olarak geçmeyen, ama aranması muhtemel kavramlar */
+const EK_KAVRAMLAR = [
+  ["SSH", "Ağ üzerinden şifreli uzaktan komut satırı erişimi sağlayan servis; bu projede 4242 portunda çalışır.", 6],
+  ["sshd_config", "SSH sunucusunun ayar dosyası (/etc/ssh/sshd_config); port ve PermitRootLogin buradan değişir.", 6],
+  ["PermitRootLogin", "sshd_config ayarı; 'no' yapılınca root doğrudan SSH ile giriş yapamaz.", 6],
+  ["UFW", "Debian'da iptables'ı basitleştiren güvenlik duvarı ön yüzü; bu projede sadece 4242 açılır.", 7],
+  ["firewalld", "Rocky'nin güvenlik duvarı; zone kavramıyla çalışır, --permanent ile kalıcı kural yazılır.", 7],
+  ["AppArmor", "Debian'ın varsayılan MAC aracı; profil tabanlı, uygulamanın erişebileceği dosyaları sınırlar.", 5],
+  ["SELinux", "Rocky'nin varsayılan MAC aracı; dosya yoluna değil context etiketine göre çalışır.", 5],
+  ["visudo", "sudoers dosyasını sözdizimi kontrolüyle düzenleyen komut; doğrudan editörle açmak sudo'yu kilitleyebilir.", 11],
+  ["secure_path", "sudo çalışırken kullanılabilecek PATH'i sabit bir listeyle sınırlayan sudoers ayarı.", 11],
+  ["requiretty", "sudo'nun yalnızca gerçek bir terminalden çalıştırılmasını zorunlu kılan sudoers ayarı.", 11],
+  ["badpass_message", "Yanlış parola girildiğinde sudo'nun gösterdiği özel mesajı belirleyen ayar.", 11],
+  ["log_input / log_output", "sudo oturumunda hem yazılan komutu hem ekran çıktısını kaydeden ayar; yeri iolog_dir ile belirlenir.", 11],
+  ["sudoreplay", "sudo I/O kayıtlarını video gibi geri oynatan komut.", 11],
+  ["chage", "Bir kullanıcının parola yaşlanma ayarlarını gösteren/değiştiren komut (-M, -m, -W).", 10],
+  ["pwquality", "Parola karmaşıklık kurallarının tutulduğu PAM yapılandırması (/etc/security/pwquality.conf).", 10],
+  ["difok", "Yeni parolanın eskisinden kaç karakter farklı olacağını belirleyen kural; bu projede 7, root hariç.", 10],
+  ["minlen", "Parolanın en az kaç karakter olacağını belirleyen kural; bu projede 10.", 10],
+  ["maxrepeat", "Arka arkaya kaç aynı karaktere izin verildiğini belirler; bu projede 3.", 10],
+  ["enforce_for_root", "Parola kurallarının root hesabına da uygulanmasını sağlayan ayar.", 10],
+  ["login.defs", "Parola yaşlanma varsayılanlarının tutulduğu dosya; sadece yeni kullanıcıları etkiler.", 10],
+  ["usermod -aG", "Kullanıcıyı var olan gruplarını silmeden yeni bir gruba ekleyen komut; -a olmadan gruplar silinir.", 9],
+  ["adduser", "Debian'a özgü, etkileşimli kullanıcı oluşturma komutu.", 9],
+  ["hostnamectl", "Makine adını hem dosyada hem anlık olarak değiştiren komut.", 8],
+  ["wall", "Sistemdeki tüm açık terminallere mesaj yayınlayan komut; monitoring.sh bunu kullanır.", 12],
+  ["shebang", "Betiğin ilk satırındaki #!/bin/bash; hangi yorumlayıcıyla çalışacağını belirtir.", 12],
+  ["@reboot", "cron'da açılışta bir kez çalıştırma zamanlaması.", 12],
+  ["signature.txt", "VM disk dosyasının sha1 özetini taşıyan teslim dosyası; makinenin kimlik kanıtıdır.", 14],
+  ["snapshot", "VM'in o anki hâlinin kaydı; savunma snapshot'sız başlamalı, savunmaya özel olan sonunda silinir.", 14],
+  ["netinstall", "Kurulum sırasında paketleri internetten çeken küçük Debian kurulum imajı.", 3],
+  ["GRUB", "Açılış yükleyicisi; kurulumda ana diske yazılmazsa VM açılmaz.", 3],
+  ["swap", "RAM yetmediğinde kullanılan disk alanı; bu projede ayrı bir LV olarak açılır.", 4],
+  ["/boot", "Çekirdek dosyalarının durduğu bölüm; bootloader okuyabilsin diye şifrelenmez.", 4],
+  ["NAT / port yönlendirme", "VirtualBox'ın varsayılan ağ modu; dışarıdan erişim için port yönlendirme ya da köprülenmiş mod gerekir.", 1]
+];
+
+const ARAMA_INDEKSI = (() => {
+  const liste = sozlukAyristir();
+  EK_KAVRAMLAR.forEach(([terim, izah, numara]) => {
+    const bolum = BOLUMLER.find(b => b.numara === String(numara));
+    liste.push({ terim, izah, bolum: bolum ? bolum.no : 0, tur: "kavram" });
+  });
+  BOLUMLER.forEach(bolum => {
+    bolum.metin.split("\n").forEach(satir => {
+      if (satir.startsWith("### ")) {
+        liste.push({ terim: satir.slice(4).trim(), izah: "", bolum: bolum.no, tur: "baslik" });
+      }
+    });
+  });
+  return liste;
+})();
+
+/* Türkçe küçültme: I/İ sorununu düzeltir */
+function kucult(s) {
+  return s.replace(/I/g, "ı").replace(/İ/g, "i").toLowerCase();
+}
+
+/* ---------- Soru bankası ----------
+   secme  : çoktan seçmeli (test, sayı, hata avı, senaryo alt türleriyle)
+   dizme  : parçaları doğru sırada dizme (komut ya da adım)
+   esles  : iki sütunu eşleştirme
+   Her sorunun "b" alanı ait olduğu bölüm numarasıdır.                       */
+const SORULAR = [
+  /* --- Bölüm 1 --- */
+  { tip:"secme", b:1, alt:"test", soru:"Hypervisor nedir?",
+    secenekler:["Sanal makine oluşturup yöneten yazılım","Linux çekirdeğinin güvenlik modülü","Diskleri şifreleyen araç","Paketleri kuran yardımcı program"],
+    dogru:0, izah:"VirtualBox ve UTM birer hypervisor'dür; normal işletim sisteminin üzerinde uygulama gibi çalışırlar (Tip-2)." },
+  { tip:"secme", b:1, alt:"senaryo", soru:"VirtualBox varsayılan NAT modunda. Host'tan VM'in 4242 portuna bağlanamıyorsun. Sebep nedir?",
+    secenekler:["SSH servisi NAT arkasında çalışamaz; yalnızca köprülenmiş modda dinleyebilir","NAT'ta dışarıdan VM'e doğrudan erişilemez; port yönlendirme ya da köprülenmiş mod gerekir","UFW, NAT modunda gelen bütün bağlantıları arayüz düzeyinde engeller","NAT modunda VM'e IP atanmaz; ağ ancak DHCP açıldıktan sonra çalışır"],
+    dogru:1, izah:"NAT'ta VM dışarı çıkabilir ama dışarıdan doğrudan ulaşılamaz. Ya port yönlendirme kuralı eklenir ya da ağ modu Köprülenmiş (Bridged) yapılır." },
+  { tip:"secme", b:1, alt:"test", soru:"UTM'i hangi durumda kullanırsın?",
+    secenekler:["Debian yerine Rocky kuracaksan","Apple Silicon Mac'te VirtualBox desteklenmediği için","Disk şifrelemesi gerektiğinde","Bonus kısmı yapacaksan"],
+    dogru:1, izah:"Apple Silicon (M1/M2/M3) Mac'lerde VirtualBox resmi olarak desteklenmiyor. UTM'de disk dosyası .qcow2 uzantılıdır." },
+
+  /* --- Bölüm 2 --- */
+  { tip:"secme", b:2, alt:"test", soru:"apt ile aptitude arasındaki fark nedir?",
+    secenekler:["aptitude .rpm, apt ise .deb paketleriyle çalışır; ikisi farklı ailelere aittir","İkisi de dpkg'yi kullanır; aptitude farklı bağımlılık çözümü ve interaktif arayüz sunar","apt yalnızca kurulum, aptitude yalnızca kaldırma işlemleri için kullanılır","Aralarında fark yoktur; aptitude, apt'ın eski sürümlerdeki adıdır"],
+    dogru:1, izah:"Savunmada açıkça sorulabileceği subject'te yazıyor: ikisi de dpkg üzerine kurulu ön yüzlerdir, fark bağımlılık çözme stratejisi ve arayüzdedir." },
+  { tip:"secme", b:2, alt:"test", soru:"Rocky Linux nedir?",
+    secenekler:["Debian'ın kurumsal sürümü","CentOS'un yerini almak için kurulan, RHEL ile ikili uyumlu dağıtım","Ubuntu tabanlı bir sunucu dağıtımı","Sadece sanal makinelerde çalışan hafif bir dağıtım"],
+    dogru:1, izah:"Rocky, Red Hat Enterprise Linux ile binary compatible kurumsal bir dağıtımdır; .rpm paketlerini dnf ile yönetir." },
+
+  { tip:"secme", b:2, alt:"test", soru:"Ubuntu deneyimin bu projede neden işine yarıyor?",
+    secenekler:["Ubuntu ile Rocky aynı paket yöneticisini kullanır, Debian ise ayrı bir aile","Ubuntu Debian türevidir; apt, dpkg, systemd ve AppArmor kullanımı neredeyse aynıdır","Ubuntu'da LVM ve şifreleme hazır kurulu gelir, aynısı Debian'da da geçerlidir","Aslında yaramaz; Ubuntu ile Debian birbirinden bağımsız iki ayrı ailedir"],
+    dogru:1, izah:"Bu yüzden bu projede Debian seçmek, sıfırdan bir aileyi öğrenmekten daha az yük getiriyor." },
+
+  /* --- Bölüm 3 --- */
+  { tip:"secme", b:3, alt:"test", soru:"Sunucuya grafik arayüz kurmak neden yasak?",
+    secenekler:["VirtualBox'ın sanal ekran sürücüsü Debian'da desteklenmez, kurulum yarıda kalır","Gereksiz kaynak tüketir ve saldırı yüzeyini büyütür; subject bunu 0 puanla cezalandırıyor","Grafik arayüz şifreli LVM ile çakışır, açılışta disk kilidi çözülemez","Yasak değil, yalnızca önerilmiyor; kurarsan sadece bonus puanı alamazsın"],
+    dogru:1, izah:"Sunucu arka planda hizmet verir, önünde oturulmaz. X.org/Wayland kurulu bulunursa notun sıfır olur." },
+  { tip:"secme", b:3, alt:"hata", soru:"Minimal kurulumdan sonra ilk iş olarak `sudo apt install ufw` yazdın, 'sudo: command not found' hatası aldın. Sorun ne?",
+    secenekler:["Kullanıcın henüz sudo grubunda değil; önce gruba eklenmen gerekiyor","Minimal kurulumda sudo paketi kurulu gelmez; root olarak `apt install sudo ufw` gerekir","sudo /usr/sbin altında ama bu dizin senin PATH'inde tanımlı değil","Başka bir paket işlemi sürdüğü için apt kilitli; sudo çağrısı düşüyor"],
+    dogru:1, izah:"Netinstall'da 'SSH server' ve 'standard system utilities' dışında çoğu şey yoktur; sudo ve ufw genelde elle kurulur. Bu adım atlanırsa bölüm 7 ve 11 hiç başlayamaz." },
+  { tip:"secme", b:3, alt:"test", soru:"Kurulumdan sonra GUI kalıntısı kalmadığını hangi komutla doğrularsın?",
+    secenekler:["`ls /usr/bin | grep gui`","`dpkg -l | grep -iE 'xserver|wayland|gnome|xfce'`","`systemctl status display`","`apt list --gui`"],
+    dogru:1, izah:"Bu komut boş dönmeli. Bir şey listelenirse `sudo apt purge <paket>` ile kaldırılır." },
+
+  { tip:"secme", b:3, alt:"hata", soru:"Parolayı doğru yazdığına eminsin ama sisteme giremiyorsun; ekranda yalnızca yıldızlar görünüyor. İlk şüphelenmen gereken nedir?",
+    secenekler:["Parola politikası devreye girdi ve parolanı geçersiz sayıp reddediyor","Kurulumda seçtiğin klavye düzeni yüzünden özel karakterler farklı tuşlara düşüyor","Üç hatalı denemeden sonra hesap kilitlendi; beklemen gerekiyor","Parolanın süresi doldu; sistem yenisini istiyor ama ekranda göstermiyor"],
+    dogru:1, izah:"Türkçe düzende özel işaretler İngilizce düzendekinden farklı tuşlara düşer. Korunmak için ya düzeni not et ya da parolayı yalnızca harf ve rakamdan kur. Aynı tuzak LUKS parolasında daha ağır sonuçlanır." },
+  { tip:"secme", b:3, alt:"test", soru:"Kurulumdan sonra kendi kullanıcın henüz sudo grubunda değil. Root'a nasıl geçersin?",
+    secenekler:["`sudo su` ile; bu komut her Debian kurulumunda hazır gelir","`su -` ile; kurulumda belirlediğin root parolasını ister","`root` komutunu çalıştırarak; parola sormadan yetkiyi devreder","Root'a hiç geçilemez; sudo kurulana kadar yetkili işlem yapılamaz"],
+    dogru:1, izah:"sudo henüz kurulu olmadığı için `sudo su` çalışmaz. `-` işareti root'un kendi ortamını da yükler; root'ken sudo'yu kurar, kendini sudo grubuna ekler, sonra `exit` dersin." },
+  { tip:"dizme", b:3, komut:true, soru:"Minimal kurulumdan sonra eksik iki temel paketi kuran komutu diz (root olarak):",
+    parcalar:["apt","install","sudo","ufw"],
+    izah:"Bu adım atlanırsa firewall ve sudo bölümleri hiç başlayamaz." },
+  { tip:"secme", b:3, alt:"test", soru:"GUI olmadığı için config dosyalarını neyle düzenlersin?",
+    secenekler:["Kurulum sihirbazının yapılandırma ekranından; dosyalar oradan düzenlenir","nano ya da vim gibi terminal editörleriyle; tek istisna sudoers, ona visudo ile dokunulur","Yalnızca echo ve yönlendirme ile; terminal editörleri GUI gerektirdiği için kurulamaz","Root kabuğundaki `set` komutuyla; dosyalara doğrudan dokunulmaz"],
+    dogru:1, izah:"Minimal kurulumda nano bile gelmemiş olabilir; `apt install nano` yeterli. sudoers'a doğrudan editörle dokunmak sudo'yu kilitleyebilir." },
+
+  /* --- Bölüm 4 --- */
+  { tip:"dizme", b:4, komut:true, soru:"Bir bölümü LUKS ile şifreye hazırlayan komutu diz:",
+    parcalar:["cryptsetup","luksFormat","/dev/sda5"],
+    izah:"Kurulum sihirbazı bunu tıklamalarla yapar; ardından `cryptsetup open` ile açılıp içine LVM kurulur." },
+  { tip:"dizme", b:4, komut:true, soru:"Şifreli alanın içinde 10GB'lık root mantıksal birimini oluşturan komutu diz:",
+    parcalar:["lvcreate","-L 10G","-n root","VGname"],
+    izah:"-L boyutu, -n adı belirtir. Son parametre birimin açılacağı Volume Group'tur." },
+  { tip:"dizme", b:4, komut:false, soru:"Diskin katmanlarını dıştan içe doğru sırala:",
+    parcalar:["partition","LUKS şifreleme","LVM","dosya sistemi"],
+    izah:"Önce bölüm LUKS ile şifrelenir (sda5_crypt oluşur), sonra o cihazın içine LVM kurulur, en sonda dosya sistemleri gelir." },
+  { tip:"secme", b:4, alt:"test", soru:"LVM'i neden tercih ediyorsun? Savunmada verilecek en güçlü cevap hangisi?",
+    secenekler:["Okuma yazma hızını artırır; veriyi birden çok disk arasında paylaştırır","Disk alanını PV→VG→LV katmanlarıyla esnek yönetir; birimi sonradan büyütebilirsin","Bölümleri şifreleyerek verinin çalınmasını engeller, LUKS'a gerek bırakmaz","Bölümleri otomatik yedekler, bozulma hâlinde eski hâline döndürür"],
+    dogru:1, izah:"Şifrelemeyi LUKS yapar, LVM değil. LVM'in ayırt edici faydası esneklik ve sonradan büyütebilmedir." },
+  { tip:"secme", b:4, alt:"test", soru:"Disk şifreleme parolan ile kullanıcı giriş parolan aynı şey midir?",
+    secenekler:["Evet; kurulumda tek parola belirlenir, hem disk hem hesap onunla açılır","Hayır — biri (LUKS) diski açılışta kilitten çıkarır, diğeri sisteme giriş yapar","Evet; yalnızca root hesabı için ayrı bir parola tanımlanması gerekir","Hayır ama ikisi de login.defs kurallarına tabidir, birlikte süresi dolar"],
+    dogru:1, izah:"Tamamen ayrı iki paroladır. LUKS parolası VM her açıldığında, kilidi çözmek için sorulur." },
+  { tip:"secme", b:4, alt:"test", soru:"/boot neden şifrelenmez?",
+    secenekler:["İçinde hassas veri olmadığı için","Bootloader'ın onu okuyabilmesi gerektiği için","LVM desteklemediği için","Subject öyle istediği için, teknik sebebi yok"],
+    dogru:1, izah:"/boot çekirdek dosyalarını tutar; açılış yükleyicisi şifre çözemeden bunları okuyabilmelidir." },
+
+  { tip:"secme", b:4, alt:"test", soru:"Subject'in istediği “en az 2 şifreli bölüm” şartı nasıl karşılanır?",
+    secenekler:["Diskte birbirinden bağımsız iki ayrı LUKS kabı açıp ikisini de kilitleyerek","Tek bir LUKS kabının içinde LVM ile en az iki mantıksal birim (LV) oluşturarak","/boot bölümünü de şifreleyip toplam şifreli bölüm sayısını ikiye çıkararak","VM'e ikinci bir sanal disk ekleyip onu da ayrıca şifreleyerek"],
+    dogru:1, izah:"root, swap ve home aynı şifreli kabın içindeki üç LV'dir; üçü de şifreli sayılır ve şart fazlasıyla karşılanır. /boot bu sayıya dahil değildir." },
+
+  /* --- Bölüm 5 --- */
+  { tip:"secme", b:5, alt:"test", soru:"MAC (Mandatory Access Control) ile DAC arasındaki temel fark nedir?",
+    secenekler:["DAC ağ trafiğini, MAC ise dosya erişimini kısıtlar; farklı katmanlarda çalışırlar","DAC'ta izinleri dosya sahibi belirler; MAC sistem çapında, değiştirilemez bir kural katmanı dayatır","MAC yalnızca root hesabına uygulanır, normal kullanıcılar DAC ile yönetilir","İkisi aynı mekanizmadır; MAC, DAC'ın yeni çekirdeklerdeki adıdır"],
+    dogru:1, izah:"MAC sayesinde bir servis ele geçirilse bile saldırganın sistemin geri kalanına sıçraması engellenir." },
+  { tip:"secme", b:5, alt:"test", soru:"`sudo aa-status` ne gösterir?",
+    secenekler:["Hangi kullanıcının hangi dosyalara erişebildiğini, izin listesi hâlinde","Kaç AppArmor profilinin enforce, kaçının complain modda olduğunu","Açık portları ve bu portları dinleyen servislerin profil adlarını","Son açılıştan bu yana engellenen erişim denemelerinin sayısını"],
+    dogru:1, izah:"enforce = kural zorlanıyor, complain = ihlal sadece loglanıyor. Savunmada AppArmor'ın aktif olduğunu bu komutla gösterirsin." },
+  { tip:"secme", b:5, alt:"test", soru:"AppArmor ile SELinux arasındaki yapısal fark nedir?",
+    secenekler:["AppArmor dosya yolu üzerinden profil uygular, SELinux context etiketine göre çalışır","AppArmor yalnızca ağ erişimini, SELinux ise yalnızca dosya erişimini kısıtlar","SELinux'ta enforcing modu yoktur; ihlaller engellenmez, yalnızca loglanır","AppArmor bir güvenlik duvarı, SELinux ise bir kimlik doğrulama çerçevesidir"],
+    dogru:0, izah:"SELinux daha ayrıntılıdır ama kurulumu da karmaşıktır; Debian'ın varsayılanı AppArmor'dur." },
+
+  /* --- Bölüm 6 --- */
+  { tip:"dizme", b:6, komut:true, soru:"sshd ayarlarını değiştirdikten sonra servisi yeniden başlatan komutu diz:",
+    parcalar:["sudo","systemctl","restart","sshd"],
+    izah:"Ayar dosyasını (/etc/ssh/sshd_config) değiştirmek tek başına yetmez; servis yeniden başlatılmalıdır." },
+  { tip:"secme", b:6, alt:"test", soru:"SSH portunu ve root girişini hangi dosyadan ayarlarsın?",
+    secenekler:["/etc/ssh/ssh_config","/etc/ssh/sshd_config","/etc/sshd.conf","/etc/default/ssh"],
+    dogru:1, izah:"Sunucu tarafının ayar dosyası sshd_config'tir; `Port 4242` ve `PermitRootLogin no` satırları buraya yazılır." },
+  { tip:"secme", b:6, alt:"test", soru:"`PermitRootLogin no` neden şart?",
+    secenekler:["Root hesabının parolası olmadığı için SSH bu hesabı zaten kabul etmez","Root'a her zaman normal kullanıcı + sudo üzerinden erişilmeli, doğrudan değil","SSH protokolü root girişini sürüm 2'den beri kendiliğinden reddeder","UFW, root olarak açılan bağlantıları arayüz düzeyinde zaten engeller"],
+    dogru:1, izah:"Doğrudan root girişi kapatılınca saldırgan önce normal bir hesabı kırmak zorunda kalır; ayrıca her yetkili işlem sudo ile loglanır." },
+  { tip:"secme", b:6, alt:"test", soru:"4242 portunun gerçekten dinlendiğini nasıl doğrularsın?",
+    secenekler:["`ping 4242`","`ss -tunlp | grep 4242`","`ufw show 4242`","`systemctl list-ports`"],
+    dogru:1, izah:"Çıktıda portun LISTEN durumda ve sshd'ye ait olduğunu görmelisin." },
+
+  { tip:"secme", b:6, alt:"senaryo", soru:"Uzun `secure_path` satırını VM konsolunda harf harf yazmak hem yorucu hem hataya açık. En doğru yaklaşım nedir?",
+    secenekler:["Satırı kısaltıp yalnızca gerekli dizinleri bırakmak, yazım yükünü azaltmak","Önce SSH'ı bitirip projenin geri kalanını ana makineden bağlanarak yapmak","VirtualBox misafir eklentilerini kurup pano paylaşımını açmak","Dosyayı host'ta yazıp paylaşılan klasör üzerinden VM'e taşımak"],
+    dogru:1, izah:"VirtualBox penceresiyle host arasında pano paylaşımı yoktur. SSH çalışır çalışmaz host terminalinden bağlanırsın: kopyala-yapıştır kazanırsın ve SSH'ın dışarıdan çalıştığını her gün doğrulamış olursun. Misafir eklentileri GUI paketleri getirebileceği için risklidir." },
+  { tip:"dizme", b:6, komut:true, soru:"Ana makineden VM'e bağlanan komutu diz (port yönlendirme kuruluyken):",
+    parcalar:["ssh","login@127.0.0.1","-p 4242"],
+    izah:"Köprülenmiş ağ modu kullanıyorsan 127.0.0.1 yerine VM'in kendi IP adresini yazarsın." },
+
+  /* --- Bölüm 7 --- */
+  { tip:"dizme", b:7, komut:true, soru:"UFW'de yalnızca 4242 portunu açan komutu diz:",
+    parcalar:["sudo","ufw","allow","4242/tcp"],
+    izah:"Felsefe 'varsayılan red, istisna izin': her şey kapalı, sadece bu port açık." },
+  { tip:"secme", b:7, alt:"hata", soru:"UFW'yi kurdun, 4242'ye izin verdin, `ufw enable` dedin. Ama VM'i yeniden başlatınca firewall kapalı geliyor. Ne unuttun?",
+    secenekler:["Kuralı yazdıktan sonra `ufw reload` ile yeniden yüklemeyi unuttun","Servisi açılışta başlayacak şekilde etkinleştirmeyi (`systemctl enable ufw`)","Kuralı `--permanent` bayrağıyla yazmadın, geçici kural reboot'ta silindi","Portu sshd_config'e de eklemedin, UFW dinlenmeyen portu açık tutmaz"],
+    dogru:1, izah:"Subject firewall'ın VM başlar başlamaz aktif olmasını şart koşuyor. --permanent ise firewalld'ye ait bir bayraktır, UFW'ye değil." },
+  { tip:"secme", b:7, alt:"test", soru:"firewalld'yi UFW'den ayıran kavram nedir?",
+    secenekler:["Kuralları doğrudan çekirdeğe yazar, iptables katmanına hiç ihtiyaç duymaz","Zone kavramı vardır; her arayüz bir zone'a atanır, kurallar zone bazlı tanımlanır","Yalnızca TCP portlarını yönetir; UDP için ayrı bir araç gerekir","Kuralları kalıcıdır; UFW'de her kural yeniden başlatmada kaybolur"],
+    dogru:1, izah:"Ayrıca `--permanent` olmadan yazılan kural reboot'ta kaybolur ve `--reload` ile devreye alınır." },
+
+  /* --- Bölüm 8 --- */
+  { tip:"dizme", b:8, komut:true, soru:"Savunmada hostname'i canlı olarak değiştiren komutu diz:",
+    parcalar:["sudo","hostnamectl","set-hostname","yenihostname"],
+    izah:"Bu komut hem /etc/hostname'i günceller hem anlık uygular; reboot gerekmez." },
+  { tip:"secme", b:8, alt:"test", soru:"/etc/hosts dosyasındaki 127.0.1.1 satırı neden önemli?",
+    secenekler:["SSH bu satırı okuyarak hangi porttan dinleyeceğine karar verir","Hostname burada da geçmezse bazı komutlar (sudo dahil) yavaşlar ya da hata verir","Firewall kuralları bu satırdaki adrese göre uygulanır, yoksa 4242 kapanır","Hostname yalnızca burada tutulur; /etc/hostname sadece kurulum sırasında okunur"],
+    dogru:1, izah:"Hostname'i değiştirirken /etc/hostname ile birlikte bu satırı da tutarlı tutmak gerekir." },
+
+  /* --- Bölüm 9 --- */
+  { tip:"secme", b:9, alt:"hata", soru:"Bir peer şu komutu yazdı: `sudo usermod -G sudo hamza`. Bu komutun sorunu ne?",
+    secenekler:["Kullanıcı adı grup adından önce yazılmalıydı; komut ters sırada verilmiş","-a olmadığı için kullanıcının var olan tüm ikincil grupları silinip yerine sudo yazılır","usermod var olmayan kullanıcıyı ekleyemez; önce adduser çalıştırılmalıydı","Sorun yok; -a yalnızca aynı anda birden fazla grup eklerken gereklidir"],
+    dogru:1, izah:"Doğrusu `sudo usermod -aG sudo hamza`. -a (append) unutulursa kullanıcı user42 gibi diğer gruplardan düşer — tipik ve ciddi bir tuzak." },
+  { tip:"dizme", b:9, komut:true, soru:"Kullanıcıyı user42 grubuna, var olan gruplarını bozmadan ekleyen komutu diz:",
+    parcalar:["sudo","usermod","-aG","user42","login"],
+    izah:"-a append, -G ikincil grup demektir; ikisi her zaman birlikte kullanılır." },
+  { tip:"secme", b:9, alt:"test", soru:"Kullanıcının gerçekten user42 ve sudo gruplarında olduğunu nasıl doğrularsın?",
+    secenekler:["`cat /etc/passwd`","`groups login` ya da `id login`","`usermod -l login`","`who login`"],
+    dogru:1, izah:"groups üyesi olunan grupları listeler; id ayrıca UID/GID bilgisini de gösterir." },
+
+  /* --- Bölüm 10 --- */
+  { tip:"secme", b:10, alt:"sayi", soru:"Parolanın süresi kaç günde bir dolmalı?",
+    secenekler:["7","14","30","90"], dogru:2,
+    izah:"PASS_MAX_DAYS 30. Var olan hesaplara `chage -M 30` ile ayrıca uygulanmalı." },
+  { tip:"secme", b:10, alt:"sayi", soru:"İki parola değişikliği arasındaki en az gün sayısı kaçtır?",
+    secenekler:["0","2","7","10"], dogru:1,
+    izah:"PASS_MIN_DAYS 2. Kullanıcının parolayı art arda değiştirip eski parolaya dönmesini engeller." },
+  { tip:"secme", b:10, alt:"sayi", soru:"Parolanın süresi dolmadan kaç gün önce uyarı verilir?",
+    secenekler:["2","3","7","30"], dogru:2,
+    izah:"PASS_WARN_AGE 7." },
+  { tip:"secme", b:10, alt:"sayi", soru:"Parola en az kaç karakter olmalı?",
+    secenekler:["8","10","12","16"], dogru:1,
+    izah:"minlen = 10; ayrıca en az bir büyük harf, bir küçük harf ve bir rakam zorunlu." },
+  { tip:"secme", b:10, alt:"sayi", soru:"Arka arkaya en fazla kaç aynı karaktere izin var?",
+    secenekler:["2","3","4","Sınır yok"], dogru:1,
+    izah:"maxrepeat = 3; yani 3'ten fazla ardışık aynı karakter yasak." },
+  { tip:"secme", b:10, alt:"sayi", soru:"Yeni parola eskisinden en az kaç karakter farklı olmalı (root hariç)?",
+    secenekler:["3","5","7","10"], dogru:2,
+    izah:"difok = 7. Subject bu kuralın root'a uygulanmadığını açıkça belirtiyor — tek istisna budur." },
+  { tip:"secme", b:10, alt:"test", soru:"pwquality.conf'ta `ucredit = -1` ne anlama gelir?",
+    secenekler:["En fazla 1 büyük harf olabilir","En az 1 büyük harf zorunludur","Büyük harf yasaktır","Büyük harf 1 puan değerindedir"],
+    dogru:1, izah:"Eksi değer 'zorunlu' demektir — kafa karıştırıcı ama ezberlenmesi gereken bir PAM tuhaflığıdır. lcredit küçük harf, dcredit rakam içindir." },
+  { tip:"secme", b:10, alt:"test", soru:"`enforce_for_root` satırını yazmazsan ne olur?",
+    secenekler:["Root parolası hiç değiştirilemez; passwd komutu hata verir","Parola karmaşıklık kuralları root hesabına uygulanmaz","Root artık sudo kullanamaz; yalnızca doğrudan giriş yapabilir","difok kuralı bütün hesaplar için devre dışı kalır"],
+    dogru:1, izah:"Subject 'root parolası da bu politikaya uymalı' dediği için bu satır gerekir; sıkça unutulur." },
+  { tip:"dizme", b:10, komut:true, soru:"login.defs değerlerini root hesabına geriye dönük uygulayan komutu diz:",
+    parcalar:["sudo","chage","-M 30","-m 2","-W 7","root"],
+    izah:"login.defs sadece yeni kullanıcıları etkiler; root ve senin hesabın zaten vardı, onlara elle uygulanır." },
+  { tip:"secme", b:10, alt:"hata", soru:"login.defs ve pwquality.conf'u doldurdun ama `chage -l root` eski değerleri gösteriyor. Sebep?",
+    secenekler:["Dosyaları düzenledikten sonra PAM ayarlarını yeniden yüklemedin","Bu dosyalar yalnızca yeni kullanıcıları etkiler; var olan hesaplara chage ile uygulanır","Değerler ancak sistem yeniden başlatıldıktan sonra okunur hâle gelir","chage yalnızca kendi hesabını okur; root için ayrı bir bayrak gerekir"],
+    dogru:1, izah:"Bu atlanırsa politika sadece kağıt üzerinde kalır — savunmada chage -l ile hemen görülür." },
+
+  /* --- Bölüm 11 --- */
+  { tip:"secme", b:11, alt:"test", soru:"sudoers dosyasını neden mutlaka visudo ile düzenlemelisin?",
+    secenekler:["sudoers şifreli tutulur; yalnızca visudo dosyayı çözüp okuyabilir","Kaydetmeden önce sözdizimini denetler; hatalı bir satır sudo'yu tamamen kilitleyebilir","Değişiklikleri /var/log/sudo/ altına yazar, böylece yanlış kural geri alınabilir","Dosyayı 0440 izniyle yeniden oluşturur, elle bozulan izinleri düzeltir"],
+    dogru:1, izah:"Sözdizimi hatası olursa root bile düzeltemeyebilir. /etc/sudoers.d/ altına ayrı dosya yazmak riski daha da azaltır." },
+  { tip:"secme", b:11, alt:"test", soru:"`Defaults secure_path=...` ayarı ne işe yarar?",
+    secenekler:["sudo kayıtlarının yazılacağı dizini belirler, iolog_dir'in eski adıdır","sudo çalışırken kullanılabilecek PATH'i sabit bir listeyle sınırlar","sudo çalıştıran kullanıcının ev dizinini geçici olarak root'unkine çevirir","Şifreli bölümlerin açılışta hangi sırayla mount edileceğini belirler"],
+    dogru:1, izah:"Kullanıcının kendi PATH'ine sızdırdığı sahte bir binary'nin sudo ile çalıştırılmasını engeller." },
+  { tip:"secme", b:11, alt:"test", soru:"`Defaults requiretty` ne yapar?",
+    secenekler:["Her sudo çağrısında yeni bir terminal oturumu açıp çıktıyı oraya yönlendirir","sudo'nun yalnızca gerçek bir terminal (TTY) üzerinden çalıştırılmasını zorunlu kılar","Parolanın terminalde yıldızla görünmesini sağlar, boş görünmesini engeller","Log dosyalarını her TTY için ayrı tutar, kayıtların karışmasını önler"],
+    dogru:1, izah:"Arka planda çalışan betiklerin sudo çalıştırmasını engelleyen bir güvenlik önlemidir." },
+  { tip:"secme", b:11, alt:"test", soru:"sudo ile yapılan işlemlerin girdi ve çıktısı nereye kaydedilir?",
+    secenekler:["/var/log/syslog içine, diğer sistem kayıtlarıyla birlikte satır satır","/var/log/sudo/ içine; log_input, log_output ve iolog_dir ayarlarıyla","/etc/sudoers.d/ altına, kuralların yanına ayrı bir kayıt dosyası olarak","Kullanıcının ev dizinine, kabuk geçmişinin yanındaki gizli bir dosyaya"],
+    dogru:1, izah:"Klasörü önce sen oluşturursun (`sudo mkdir -p /var/log/sudo`). Kayıtlar `sudoreplay` ile geri oynatılabilir." },
+
+  /* --- Bölüm 12 --- */
+  { tip:"esles", b:12, soru:"monitoring.sh'in bilgi kalemlerini komutlarla eşleştir:",
+    ciftler:[["Mimari ve kernel","uname -a"],["Sanal işlemci (vCPU)","nproc"],["RAM kullanımı","free -m"],["Disk kullanımı","df -h /"],["Son yeniden başlatma","who -b"],["Kullanıcı sayısı","who | wc -l"]],
+    izah:"Bu eşleşmeleri savunmada betiği satır satır anlatırken kullanacaksın." },
+  { tip:"esles", b:12, soru:"Kalan bilgi kalemlerini komutlarla eşleştir:",
+    ciftler:[["Fiziksel işlemci","lscpu | grep \"Socket(s)\""],["LVM aktif mi","lsblk | grep lvm"],["Aktif TCP bağlantısı","ss -ta | grep ESTAB | wc -l"],["IP ve MAC adresi","ip a"],["CPU yükü","top -bn1 | grep \"Cpu(s)\""]],
+    izah:"IP ve MAC için tek komut yeter: 'inet' satırı IP'yi, 'link/ether' satırı MAC'i verir." },
+  { tip:"dizme", b:12, komut:true, soru:"Betiği çalıştırılabilir yapan komutu diz:",
+    parcalar:["chmod","+x","/usr/local/bin/monitoring.sh"],
+    izah:"Bunun yanında betiğin ilk satırında #!/bin/bash (shebang) olmalı; ikisi eksikse cron betiği çalıştıramaz." },
+  { tip:"secme", b:12, alt:"test", soru:"`wall` komutu ne yapar?",
+    secenekler:["Konsolun arka planındaki açılış mesajını değiştirir","Sistemdeki tüm açık terminallere aynı anda mesaj yayınlar","Güvenlik duvarı kurallarını yazar; ufw'nin alt seviye karşılığıdır","Betiği arka plana alıp çıktısını bir dosyaya yönlendirir"],
+    dogru:1, izah:"monitoring.sh çıktısını tüm oturum açmış kullanıcıların terminaline bu şekilde basar." },
+  { tip:"secme", b:12, alt:"test", soru:"Crontab'daki `*/10 * * * *` ne anlama gelir?",
+    secenekler:["Her gün saat 10'da","Her 10 dakikada bir","10 gün sonra bir kez","Açılışta 10 saniye sonra"],
+    dogru:1, izah:"Açılışta bir kez çalıştırma ise `@reboot` ile yapılır; ikisi birlikte kullanılır." },
+  { tip:"secme", b:12, alt:"senaryo", soru:"Değerlendirici: 'monitoring.sh'i DEĞİŞTİRMEDEN durdur.' Ne yaparsın?",
+    secenekler:["Betiği siler ya da içini boşaltırım","`crontab -e` ile ilgili satırın başına # koyup kaydederim","`systemctl stop monitoring` çalıştırırım","chmod -x ile çalıştırma iznini kaldırırım"],
+    dogru:1, izah:"Betiğe hiç dokunmadan, sadece cron zamanlamasını devre dışı bırakmak istenen cevaptır. chmod -x de dosyayı etkileyeceği için 'değiştirmeden' şartına takılır." },
+
+  /* --- Bölüm 13 --- */
+  { tip:"secme", b:13, alt:"test", soru:"README.md'nin ilk satırı nasıl olmalı?",
+    secenekler:["H1 başlık olarak projenin adı, hemen altında bir cümlelik proje özeti","İtalik, şu kalıpta: This project has been created as part of the 42 curriculum by <login>.","Kullanılan işletim sistemi ve sürümü, kod bloğu içinde ilk satır olarak","42 logosu ve kampüs adını içeren, ortalanmış bir kapak satırı olmalı"],
+    dogru:1, izah:"Kalıp birebir korunmalı; birden fazla kişi varsa loginler virgülle ayrılır." },
+  { tip:"secme", b:13, alt:"test", soru:"README'nin Resources bölümünde ayrıca ne bulunmalı?",
+    secenekler:["VM disk imzası ve kurulumda seçilen paketlerin tam listesi","AI'nin hangi görevlerde ve projenin hangi kısımlarında kullanıldığının açıklaması","monitoring.sh'in tam kodu ve satır satır çalışma açıklaması","Peer değerlendirmede aldığın notlar ve düzeltilen eksiklerin listesi"],
+    dogru:1, izah:"Kaynak listesinin yanında AI kullanımının dürüstçe belgelenmesi subject'in açık şartıdır." },
+  { tip:"secme", b:13, alt:"test", soru:"Project description bölümünde hangi dört karşılaştırma zorunlu?",
+    secenekler:["apt/dnf, bash/zsh, ext4/xfs, cron/systemd","Debian/Rocky, AppArmor/SELinux, UFW/firewalld, VirtualBox/UTM","LVM/LUKS, sudo/su, SSH/telnet, UFW/iptables","Yalnızca Debian ve Rocky karşılaştırılır"],
+    dogru:1, izah:"Bu dördü subject'te tek tek sayılıyor; malumatnamenin 2, 5, 7 ve 1. bölümleri doğrudan taslak olarak kullanılabilir." },
+
+  { tip:"secme", b:13, alt:"test", soru:"README hangi dilde yazılmalı?",
+    secenekler:["Yalnızca İngilizce; başka bir dilde yazılan README kabul edilmez","İngilizce önerilir; alternatif olarak kampüsünün ana dili de kabul edilir","Yalnızca kampüsün ana dili; değerlendirme yerel dilde yapılır","Dil şartı yoktur; istediğin dilde yazabilirsin, subject buna karışmaz"],
+    dogru:1, izah:"Subject İngilizceyi öneriyor ama kampüsün ana dilini de açıkça kabul ediyor." },
+
+  /* --- Bölüm 14 --- */
+  { tip:"secme", b:14, alt:"test", soru:"signature.txt ne içerir ve ne işe yarar?",
+    secenekler:["VM'in ağ yapılandırmasını; değerlendiricinin SSH ile bağlanabilmesi için","VM disk dosyasının sha1 özetini; makinenin senin ürettiğin makine olduğunu kanıtlar","Kullanıcı ve root parolalarının özetini; politikaya uyduklarının kanıtı olarak","monitoring.sh çıktısının bir örneğini; betiğin çalıştığının kanıtı olarak"],
+    dogru:1, izah:"Savunmada bu imza canlı VM'inkiyle karşılaştırılır; tutmazsa not sıfır olur." },
+  { tip:"secme", b:14, alt:"senaryo", soru:"İmzayı aldın, sonra VM'i test için bir kez daha açtın. Şimdi ne oldu?",
+    secenekler:["Hiçbir şey; imza disk içeriğinden değil VM'in kimlik bilgisinden üretilir","Disk dosyası değişti, imza artık tutmuyor; kopya ya da snapshot stratejisi gerekiyor","İmza yalnızca diske yazma olursa değişir; salt okunur açılışta korunur","VM'i kapatınca disk eski hâline döner, imza kendiliğinden yeniden tutar"],
+    dogru:1, izah:"Çözüm: ya disk dosyasının bir kopyasını ayrı tutup imzayı ondan almak, ya da her değerlendirme öncesi snapshot kullanmak." },
+  { tip:"secme", b:14, alt:"senaryo", soru:"Savunma başlarken VM'de snapshot bulunmalı mı?",
+    secenekler:["Evet — değerlendirmeye başlamadan önce bir yedek snapshot alınmış olmalıdır","Hayır — snapshot'sız başlar; savunmaya özel olan o sırada alınıp sonunda silinir","Evet — imza doğrulaması ancak mevcut bir snapshot üzerinden yapılabilir","Fark etmez; snapshot yalnızca senin kullanımın içindir, değerlendirmeyi etkilemez"],
+    dogru:1, izah:"Subject bunu açıkça kısıtlıyor. Snapshot alıp silmeyi savunmadan önce prova etmek gerekir." }
+];
+
+/* ---------- Savunma kontrol listesi ---------- */
+const KONTROL_LISTESI = [
+  ["VM'de hiç snapshot kalmadı", 14],
+  ["`ss -tunlp` ile yalnızca 4242 açık", 6],
+  ["`sudo aa-status` ile AppArmor aktif", 5],
+  ["`sudo ufw status` ile firewall aktif ve tek kurallı", 7],
+  ["`sudo chage -l` ile politika root dahil tüm hesaplarda", 10],
+  ["`crontab -l` ile monitoring.sh kayıtlı", 12],
+  ["`hostnamectl status` ile hostname login+42 biçiminde", 8],
+  ["`lsblk` ile şifreli LVM yapısı görünüyor", 4],
+  ["GUI paketi sızmamış (`dpkg -l | grep xserver`)", 3],
+  ["README.md ve signature.txt repoda, VM repoda değil", 14],
+  ["Hostname değiştirme, kullanıcı açma, SSH ve cron durdurma prova edildi", 15]
+];
+
+/* ---------- Kurulum iş sırası: makine başındayken nerede kaldığını takip için ---------- */
+const KURULUM_ADIMLARI = [
+  ["VirtualBox'ta VM'i oluştur: RAM, sanal disk, Debian ISO bağlantısı", 1],
+  ["Ağ modunu ayarla: port yönlendirme ya da köprülenmiş adaptör", 1],
+  ["Netinstall'ı çalıştır; hostname login+42, masaüstü ortamı işaretsiz", 3],
+  ["Manuel partisyonlama: /boot + şifreli LVM (root, swap, home)", 4],
+  ["Kurulum sonrası GUI kalıntısı kalmadığını doğrula", 3],
+  ["`su -` ile root'a geç, `apt install sudo ufw` çalıştır", 3],
+  ["Kendi kullanıcını user42 ve sudo gruplarına ekle", 9],
+  ["SSH'ı 4242'ye taşı, PermitRootLogin no yap, servisi yeniden başlat", 6],
+  ["Ana makineden SSH ile bağlanabildiğini doğrula; gerisini böyle yap", 6],
+  ["UFW'de yalnızca 4242'yi aç, servisi açılışta başlayacak şekilde etkinleştir", 7],
+  ["AppArmor'ın açılışta aktif olduğunu `aa-status` ile doğrula", 5],
+  ["login.defs ve pwquality.conf ile parola politikasını yaz", 10],
+  ["chage ile var olan hesaplara uygula, root dahil tüm parolaları değiştir", 10],
+  ["visudo ile sudo kurallarını yaz, /var/log/sudo klasörünü oluştur", 11],
+  ["monitoring.sh'i yaz, çalıştırılabilir yap, cron'a @reboot ve */10 ekle", 12],
+  ["README.md'yi yaz: dört karşılaştırma ve AI kullanımı dahil", 13],
+  ["Disk imzasını al, signature.txt'ye yaz, VM'i repoya KOYMA", 14]
+];
+
+/* ---------- Komut fihristi: rehberdeki komutlar tek listede ---------- */
+const KOMUT_BASLARI = ["sudo","apt","aptitude","dpkg","su","ssh","systemctl","ufw","firewall-cmd",
+  "chage","passwd","adduser","usermod","groups","id","hostnamectl","visudo","crontab","chmod",
+  "mkdir","lsblk","pvs","vgs","lvs","cryptsetup","pvcreate","vgcreate","lvcreate","uname","lscpu",
+  "nproc","free","df","top","who","ss","ip","wall","sha1sum","shasum","certUtil","sestatus",
+  "aa-status","sudoreplay","semanage","grep","cat","nano","exit"];
+
+function komutFihristi() {
+  const liste = [];
+  const gorulen = new Set();
+  BOLUMLER.forEach(bolum => {
+    let kodIcinde = false;
+    bolum.metin.split("\n").forEach(satir => {
+      if (satir.startsWith("```")) { kodIcinde = !kodIcinde; return; }
+      if (!kodIcinde) return;
+      const temiz = satir.trim();
+      if (!temiz || temiz.startsWith("#")) return;
+      /* Sözlük satırları ("terim : açıklama") komut değildir */
+      if (/^[^:]{2,30}\s+:\s+/.test(temiz)) return;
+      const ilk = temiz.split(/[\s]+/)[0];
+      if (KOMUT_BASLARI.indexOf(ilk) === -1) return;
+      const komut = temiz.split("#")[0].trim();
+      if (!komut || gorulen.has(komut)) return;
+      gorulen.add(komut);
+      liste.push({ komut, bolum: bolum.no });
+    });
+  });
+  return liste;
+}
+const KOMUTLAR = komutFihristi();
+
+/* ---------- Evo soru-cevapları: kaynaktan ayrıştırılır ---------- */
+function evoAyristir() {
+  const bolum = BOLUMLER.find(b => b.baslik.indexOf("Savunma (Evo)") !== -1);
+  if (!bolum) return [];
+  const kartlar = [];
+  let grup = "", bekleyen = null;
+  bolum.metin.split("\n").forEach(satir => {
+    if (satir.startsWith("### ")) { grup = satir.slice(4).trim(); return; }
+    if (satir.startsWith("S: ")) { bekleyen = { grup, soru: satir.slice(3).trim(), cevap: "" }; return; }
+    if (satir.startsWith("C: ") && bekleyen) { bekleyen.cevap = satir.slice(3).trim(); kartlar.push(bekleyen); bekleyen = null; }
+  });
+  return kartlar;
+}
+const EVO_KARTLARI = evoAyristir();
+
+/* ---------- Sözlük kartları: arama indeksinden ---------- */
+const SOZLUK_KARTLARI = ARAMA_INDEKSI
+  .filter(k => (k.tur === "sozluk" || k.tur === "kavram") && k.izah)
+  .map(k => ({ on: k.terim, arka: k.izah, bolum: k.bolum }));
+
+/* ==========================================================================
+   Arayüz katmanı
+   ========================================================================== */
+
+const $ = (s, k) => (k || document).querySelector(s);
+const olustur = (etiket, sinif) => { const e = document.createElement(etiket); if (sinif) e.className = sinif; return e; };
+
+function karistir(dizi) {
+  const d = dizi.slice();
+  for (let i = d.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+/* ==========================================================================
+   Okuma yazı boyutu — yolda okurken ayarlanabilsin
+   ========================================================================== */
+const BOYUTLAR = [15, 16.5, 18.5, 20.5];
+
+function boyutUygula(kademe) {
+  document.documentElement.style.setProperty("--okuma-boyut", BOYUTLAR[kademe] + "px");
+}
+let yaziKademesi = depo.oku("b2r.boyut", 1);
+if (typeof yaziKademesi !== "number" || yaziKademesi < 0 || yaziKademesi >= BOYUTLAR.length) yaziKademesi = 1;
+boyutUygula(yaziKademesi);
+
+function boyutDegistir(yon) {
+  const yeni = yaziKademesi + yon;
+  if (yeni < 0 || yeni >= BOYUTLAR.length) return;
+  yaziKademesi = yeni;
+  depo.yaz("b2r.boyut", yeni);
+  boyutUygula(yeni);
+}
+
+/* ==========================================================================
+   Aranan ifadeyi bölüm metninde vurgulama
+   ========================================================================== */
+function vurgula(kok, sorgu) {
+  const q = kucult((sorgu || "").trim());
+  if (q.length < 2) return null;
+  const yurutec = document.createTreeWalker(kok, NodeFilter.SHOW_TEXT, null);
+  const dugumler = [];
+  while (yurutec.nextNode()) dugumler.push(yurutec.currentNode);
+  dugumler.forEach(dugum => {
+    const metin = dugum.nodeValue;
+    const kucuk = kucult(metin);
+    let yer = kucuk.indexOf(q);
+    if (yer === -1) return;
+    const parca = document.createDocumentFragment();
+    let son = 0;
+    while (yer !== -1) {
+      if (yer > son) parca.appendChild(document.createTextNode(metin.slice(son, yer)));
+      const isaret = document.createElement("mark");
+      isaret.textContent = metin.slice(yer, yer + q.length);
+      parca.appendChild(isaret);
+      son = yer + q.length;
+      yer = kucuk.indexOf(q, son);
+    }
+    if (son < metin.length) parca.appendChild(document.createTextNode(metin.slice(son)));
+    dugum.parentNode.replaceChild(parca, dugum);
+  });
+  return kok.querySelector("mark");
+}
+
+/* ==========================================================================
+   Tam metin arama — sözlükte olmayan ifadeler de bulunabilsin
+   ========================================================================== */
+function metindeAra(sorgu) {
+  const q = kucult((sorgu || "").trim());
+  if (q.length < 3) return [];
+  const sonuclar = [];
+  BOLUMLER.forEach(bolum => {
+    const kucuk = kucult(bolum.metin);
+    let yer = kucuk.indexOf(q);
+    if (yer === -1) return;
+    let adet = 0, gezen = yer;
+    while (gezen !== -1) { adet++; gezen = kucuk.indexOf(q, gezen + q.length); }
+    const bas = Math.max(0, yer - 55);
+    const bit = Math.min(bolum.metin.length, yer + q.length + 85);
+    let kesit = bolum.metin.slice(bas, bit).replace(/[#`]+/g, "").replace(/\s+/g, " ").trim();
+    sonuclar.push({
+      bolum: bolum.no,
+      adet,
+      once: (bas > 0 ? "… " : "") + kesit.slice(0, Math.max(0, kucult(kesit).indexOf(q))),
+      eslesen: kesit.substr(Math.max(0, kucult(kesit).indexOf(q)), q.length),
+      sonra: kesit.slice(Math.max(0, kucult(kesit).indexOf(q)) + q.length) + (bit < bolum.metin.length ? " …" : "")
+    });
+  });
+  return sonuclar.sort((a, b) => b.adet - a.adet);
+}
+
+/* ==========================================================================
+   Uygulama içi geri: geçmiş yığını
+   Telefonun geri tuşu uygulamadan atmasın diye her derinleşmede tarayıcı
+   geçmişine bir adım eklenir; geri basıldığında o adımın geri işlevi çalışır.
+   ========================================================================== */
+const geriYigini = [];
+
+function derinlesGit(geriIslevi) {
+  geriYigini.push({ islev: geriIslevi, sekme: aktifSekme });
+  try { history.pushState({ b2r: geriYigini.length }, ""); } catch (e) {}
+}
+
+/* Uygulama içindeki geri düğmeleri de bunu kullanır; böylece ekran ile
+   tarayıcı geçmişi birbirinden kopmaz. */
+function geriDon() {
+  if (geriYigini.length) history.back();
+}
+
+/* Etkin sekmeye tekrar dokunulduğunda o sekmede açılmış alt ekranlar
+   geçmişten de geri sarılır; yoksa sonraki geri basışları hiçbir şey
+   yapmamış gibi görünür. */
+function sekmeKokuneDon() {
+  let i = geriYigini.length;
+  while (i > 0 && geriYigini[i - 1].sekme === aktifSekme) i--;
+  const adim = geriYigini.length - i;
+  if (adim > 0) { history.go(-adim); return true; }
+  return false;
+}
+
+/* Geçmiş adımının derinlik damgasına bakılır; böylece birden fazla adım
+   birden geri gidilse de yığın ekranla aynı hizada kalır. */
+window.addEventListener("popstate", olay => {
+  const hedef = (olay.state && olay.state.b2r) || 0;
+  let girdi = null;
+  while (geriYigini.length > hedef) girdi = geriYigini.pop();
+  if (girdi) girdi.islev();
+  /* Yığın boşsa tarayıcı kendi işini yapar: uygulamadan çıkar. */
+});
+
+/* ==========================================================================
+   Yanlış yapılan soruların defteri
+   ========================================================================== */
+function yanlisAnahtar(soru) { return soru.b + "|" + soru.soru; }
+function yanlisDefteri() { return depo.oku("b2r.yanlislar", []); }
+
+function yanlisKaydet(soru) {
+  const defter = yanlisDefteri(), anahtar = yanlisAnahtar(soru);
+  if (defter.indexOf(anahtar) === -1) { defter.push(anahtar); depo.yaz("b2r.yanlislar", defter); }
+}
+
+function yanlisKaldir(soru) {
+  const defter = yanlisDefteri(), yeri = defter.indexOf(yanlisAnahtar(soru));
+  if (yeri !== -1) { defter.splice(yeri, 1); depo.yaz("b2r.yanlislar", defter); }
+}
+
+function yanlisSorular() {
+  const defter = yanlisDefteri();
+  return SORULAR.filter(s => defter.indexOf(yanlisAnahtar(s)) !== -1);
+}
+
+/* Bir sorunun sonucunu tek yerden işler: aynı soru iki kez puanlanmaz. */
+function sonucIsle(soru, dogruMu) {
+  if (oturum.cevaplanan.indexOf(oturum.i) !== -1) return;
+  oturum.cevaplanan.push(oturum.i);
+  if (dogruMu) { oturum.dogru++; yanlisKaldir(soru); }
+  else { oturum.yanlislar.push(soru); yanlisKaydet(soru); }
+}
+
+/* ---------- Alt gezinme ---------- */
+const SEKMELER = [
+  { ad: "oku",   etiket: "Oku",   ikon: '<path d="M3 5.2A2 2 0 0 1 5 3.4h5.4v17.2H5a2 2 0 0 1-2-2Z"/><path d="M21 5.2a2 2 0 0 0-2-1.8h-5.4v17.2H19a2 2 0 0 0 2-2Z"/>' },
+  { ad: "ara",   etiket: "Ara",   ikon: '<circle cx="10.5" cy="10.5" r="6.6"/><path d="m15.4 15.4 4.7 4.7"/>' },
+  { ad: "calis", etiket: "Çalış", ikon: '<path d="M4.5 12.4 9 16.9l10-10.6"/><path d="M4.5 6.4 6.8 8.7"/>' },
+  { ad: "evo",   etiket: "Evo",   ikon: '<path d="M20.4 13.4a7.4 7.4 0 0 1-8.9 7.3L4 21.6l1-6.6a7.4 7.4 0 1 1 15.4-1.6Z"/><path d="M9 11.4h6M9 14.9h3.6"/>' }
+];
+let aktifSekme = "oku";
+
+function altCubukCiz() {
+  const cubuk = document.getElementById("altCubuk");
+  cubuk.innerHTML = "";
+  SEKMELER.forEach(s => {
+    const d = olustur("button", s.ad === aktifSekme ? "etkin" : "");
+    d.innerHTML = '<svg viewBox="0 0 24 24">' + s.ikon + "</svg><span>" + s.etiket + "</span>";
+    d.setAttribute("aria-label", s.etiket);
+    d.addEventListener("click", () => sekmeAc(s.ad));
+    cubuk.appendChild(d);
+  });
+}
+
+function sekmeAc(ad, gecmiseEkle) {
+  const onceki = aktifSekme;
+  /* Etkin sekmeye dokunuldu: ekran hemen köke çizilir, geçmiş de geri sarılır.
+     Bekleyip popstate'e bırakmak çizimi eşzamansız yapardı. */
+  if (ad === onceki && gecmiseEkle !== false) sekmeKokuneDon();
+  if (gecmiseEkle !== false && ad !== onceki) derinlesGit(() => sekmeAc(onceki, false));
+  aktifSekme = ad;
+  ["oku", "ara", "calis", "evo"].forEach(s => {
+    $("#sayfa" + s.charAt(0).toUpperCase() + s.slice(1)).classList.toggle("acik", s === ad);
+  });
+  altCubukCiz();
+  window.scrollTo(0, 0);
+  if (ad === "oku") okumaListesiCiz();
+  if (ad === "ara") aramaSayfasiCiz();
+  if (ad === "calis") calisMenusuCiz();
+  if (ad === "evo") evoSayfasiCiz();
+}
+
+/* ==========================================================================
+   1) OKUMA
+   ========================================================================== */
+function okunanlar() { return depo.oku("b2r.okundu", []); }
+
+function okumaListesiCiz() {
+  const sayfa = $("#sayfaOku");
+  sayfa.innerHTML = "";
+  const okundu = okunanlar();
+  /* Takıldığın sorular hangi bölümlerde: okurken doğrudan görebilesin diye */
+  const zayif = {};
+  yanlisSorular().forEach(s => { zayif[String(s.b)] = true; });
+  const zayifVar = Object.keys(zayif).length > 0;
+
+  const sonBolum = depo.oku("b2r.sonBolum", null);
+  if (sonBolum !== null && BOLUMLER[sonBolum]) {
+    const devam = olustur("button", "devam");
+    const yazi = olustur("span", "yazi");
+    const ustSatir = olustur("span", "ust-satir");
+    ustSatir.textContent = "Kaldığın yer";
+    const ad = olustur("span", "ad");
+    ad.textContent = (BOLUMLER[sonBolum].numara ? BOLUMLER[sonBolum].numara + ". " : "") + BOLUMLER[sonBolum].kisaBaslik;
+    yazi.append(ustSatir, ad);
+    const ok = olustur("span", "ok");
+    ok.textContent = "›";
+    devam.append(yazi, ok);
+    devam.addEventListener("click", () => bolumAc(sonBolum, okumaListesiCiz));
+    sayfa.appendChild(devam);
+  }
+
+  const ust = olustur("div", "agac-baslik");
+  ust.textContent = okundu.length + "/" + BOLUMLER.length + " bölüm okundu" +
+    (zayifVar ? " · • işaretlilerde takıldığın soru var" : " — bir bölüme dokun");
+  sayfa.appendChild(ust);
+
+  const agac = olustur("div", "agac");
+  const kok = olustur("div");
+  kok.style.color = "var(--sonuk)";
+  kok.style.fontFamily = "var(--mono)";
+  kok.textContent = "malumatname";
+  agac.appendChild(kok);
+
+  BOLUMLER.forEach((bolum, i) => {
+    const son = i === BOLUMLER.length - 1;
+    const d = olustur("button", "dal" + (okundu.indexOf(i) !== -1 ? " okundu" : ""));
+    const cizim = olustur("span", "cizim");
+    cizim.textContent = (son ? "└─" : "├─") + " ";
+    const ad = olustur("span", "ad");
+    ad.textContent = (bolum.numara ? bolum.numara + ". " : "") + bolum.kisaBaslik;
+    const rozet = olustur("span", "rozet");
+    const bolumZayif = bolum.numara && zayif[bolum.numara];
+    rozet.textContent = (bolumZayif ? "•" : "") + (okundu.indexOf(i) !== -1 ? (bolumZayif ? " ✓" : "✓") : "");
+    if (bolumZayif) rozet.style.color = "var(--vurgu)";
+    d.append(cizim, ad, rozet);
+    d.addEventListener("click", () => bolumAc(i, okumaListesiCiz));
+    agac.appendChild(d);
+  });
+  sayfa.appendChild(agac);
+}
+
+function bolumAc(no, geriIslev, vurguSorgusu) {
+  if (geriIslev) derinlesGit(geriIslev);
+  depo.yaz("b2r.sonBolum", no);
+  const bolum = BOLUMLER[no];
+  const sayfa = $("#sayfaOku");
+  sayfa.innerHTML = "";
+
+  const ust = olustur("div", "okuma-ust");
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Geri";
+  geri.addEventListener("click", geriDon);
+  const bosluk = olustur("span", "bosluk");
+  const kucult_ = olustur("button", "boyut-dugme");
+  kucult_.textContent = "A−";
+  kucult_.setAttribute("aria-label", "Yazıyı küçült");
+  kucult_.disabled = yaziKademesi === 0;
+  kucult_.addEventListener("click", () => { boyutDegistir(-1); bolumAc(no, null, vurguSorgusu); });
+  const buyut = olustur("button", "boyut-dugme");
+  buyut.textContent = "A+";
+  buyut.setAttribute("aria-label", "Yazıyı büyült");
+  buyut.disabled = yaziKademesi === BOYUTLAR.length - 1;
+  buyut.addEventListener("click", () => { boyutDegistir(1); bolumAc(no, null, vurguSorgusu); });
+  ust.append(geri, bosluk, kucult_, buyut);
+  sayfa.appendChild(ust);
+
+  const govde = olustur("article", "okuma");
+  govde.innerHTML = "<h2>" + kacir(bolum.baslik) + "</h2>" + markdownCiz(bolum.metin);
+  sayfa.appendChild(govde);
+
+  /* Uzun bölümlerde baştan bir yol haritası: alt başlıklara atlama */
+  const altBasliklar = Array.from(govde.querySelectorAll("h3"));
+  if (altBasliklar.length >= 5) {
+    const icindekiler = olustur("nav", "icindekiler");
+    altBasliklar.forEach((h3, n) => {
+      h3.id = "alt" + no + "-" + n;
+      const d = olustur("button");
+      d.textContent = h3.textContent;
+      d.addEventListener("click", () => {
+        if (typeof h3.scrollIntoView === "function") {
+          try { h3.scrollIntoView({ block: "start" }); } catch (e) {}
+        }
+      });
+      icindekiler.appendChild(d);
+    });
+    govde.insertBefore(icindekiler, govde.querySelector("h2").nextSibling);
+  }
+
+  if (vurguSorgusu) {
+    const ilk = vurgula(govde, vurguSorgusu);
+    if (ilk && typeof ilk.scrollIntoView === "function") {
+      try { ilk.scrollIntoView({ block: "center" }); } catch (e) {}
+    }
+  }
+
+  const okundu = okunanlar();
+  const isaretli = okundu.indexOf(no) !== -1;
+  const isaret = olustur("button", "okundu-dugme" + (isaretli ? " isaretli" : ""));
+  isaret.textContent = isaretli ? "✓ Okundu olarak işaretli" : "Okudum olarak işaretle";
+  isaret.addEventListener("click", () => {
+    const liste = okunanlar();
+    const yeri = liste.indexOf(no);
+    if (yeri === -1) liste.push(no); else liste.splice(yeri, 1);
+    depo.yaz("b2r.okundu", liste);
+    bolumAc(no);
+  });
+  sayfa.appendChild(isaret);
+
+  const alt = olustur("div", "okuma-alt");
+  const onceki = olustur("button");
+  onceki.textContent = "‹ Önceki";
+  onceki.disabled = no === 0;
+  onceki.addEventListener("click", () => { bolumAc(no - 1); window.scrollTo(0, 0); });
+  const sonraki = olustur("button");
+  sonraki.textContent = "Sonraki ›";
+  sonraki.disabled = no === BOLUMLER.length - 1;
+  sonraki.addEventListener("click", () => { bolumAc(no + 1); window.scrollTo(0, 0); });
+  alt.append(onceki, sonraki);
+  sayfa.appendChild(alt);
+  window.scrollTo(0, 0);
+}
+
+/* ==========================================================================
+   2) ARAMA
+   ========================================================================== */
+function aramaSayfasiCiz(baslangic) {
+  const sayfa = $("#sayfaAra");
+  sayfa.innerHTML = "";
+
+  const kutu = olustur("div", "arama-kutu");
+  const girdi = olustur("input");
+  girdi.type = "search";
+  girdi.placeholder = "Kavram ara: LVM, difok, wall…";
+  girdi.setAttribute("aria-label", "Kavram ara");
+  girdi.autocomplete = "off";
+  const sil = olustur("button", "arama-sil");
+  sil.textContent = "×";
+  sil.setAttribute("aria-label", "Aramayı temizle");
+  kutu.append(girdi, sil);
+  sayfa.appendChild(kutu);
+
+  const fihristDugme = olustur("button", "fihrist-giris");
+  fihristDugme.innerHTML = '<span>Komut fihristi</span><span class="ok">›</span>';
+  fihristDugme.addEventListener("click", () => {
+    derinlesGit(() => { sekmeAc("ara", false); aramaSayfasiCiz(girdi.value); });
+    komutFihristiCiz();
+  });
+  sayfa.appendChild(fihristDugme);
+
+  const oneri = olustur("ul", "oneri");
+  sayfa.appendChild(oneri);
+  const sonuc = olustur("div", "sonuc");
+  sayfa.appendChild(sonuc);
+
+  function onerileriCiz(q) {
+    oneri.innerHTML = "";
+    if (!q) return;
+    const kucuk = kucult(q);
+    const bulunan = ARAMA_INDEKSI
+      .filter(k => kucult(k.terim).indexOf(kucuk) !== -1)
+      .sort((a, b) => {
+        const ab = kucult(a.terim).indexOf(kucuk) === 0 ? 0 : 1;
+        const bb = kucult(b.terim).indexOf(kucuk) === 0 ? 0 : 1;
+        if (ab !== bb) return ab - bb;
+        return a.terim.length - b.terim.length;
+      })
+      .slice(0, 8);
+    bulunan.forEach(k => {
+      const li = olustur("li");
+      const d = olustur("button");
+      d.innerHTML = '<span class="terim">' + kacir(k.terim) + "</span>" +
+        (k.izah ? '<span class="kisa">' + kacir(k.izah) + "</span>" : "");
+      d.addEventListener("click", () => {
+        girdi.value = k.terim;
+        oneri.innerHTML = "";
+        sonuclariCiz(k.terim);
+      });
+      li.appendChild(d);
+      oneri.appendChild(li);
+    });
+  }
+
+  function sonuclariCiz(q) {
+    sonuc.innerHTML = "";
+    const kucuk = kucult(q.trim());
+    if (!kucuk) return;
+    const bulunan = ARAMA_INDEKSI.filter(k =>
+      kucult(k.terim).indexOf(kucuk) !== -1 || (k.izah && kucult(k.izah).indexOf(kucuk) !== -1));
+    if (!bulunan.length) {
+      const metinde = metindeAra(q);
+      if (!metinde.length) {
+        const bos = olustur("p", "bos");
+        bos.textContent = "“" + q + "” ne kavram listesinde ne de metinde geçiyor. Terimin bir kısmını yazmayı dene: örneğin “luks” ya da “sudo”.";
+        sonuc.appendChild(bos);
+        return;
+      }
+      metinSonuclariniCiz(q);
+      return;
+    }
+    bulunan.slice(0, 20).forEach(k => {
+      const kart = olustur("div", "sonuc-kart");
+      const b = BOLUMLER[k.bolum];
+      const h = olustur("h4");
+      h.textContent = k.terim;
+      kart.appendChild(h);
+      if (k.izah) { const p = olustur("p"); p.textContent = k.izah; kart.appendChild(p); }
+      const git = olustur("button", "nereden");
+      git.textContent = (b.numara ? b.numara + ". " : "") + b.kisaBaslik + " bölümünde oku ›";
+      git.addEventListener("click", () => {
+        const sorgu = girdi.value;
+        sekmeAc("oku", false);
+        bolumAc(k.bolum, () => { sekmeAc("ara", false); aramaSayfasiCiz(sorgu); }, k.terim);
+      });
+      kart.appendChild(git);
+      sonuc.appendChild(kart);
+    });
+    metinSonuclariniCiz(q);
+  }
+
+  /* Sözlükte karşılığı olmayan ifadeler için metnin kendisinde arama */
+  function metinSonuclariniCiz(sorgu) {
+    const bulunan = metindeAra(sorgu);
+    if (!bulunan.length) return;
+    const baslik = olustur("div", "metin-basligi");
+    baslik.textContent = "metinde geçtiği yerler (" + bulunan.length + " bölüm)";
+    sonuc.appendChild(baslik);
+    bulunan.slice(0, 8).forEach(k => {
+      const b = BOLUMLER[k.bolum];
+      const kart = olustur("div", "sonuc-kart");
+      const h = olustur("h4");
+      h.textContent = (b.numara ? b.numara + ". " : "") + b.kisaBaslik;
+      const adet = olustur("span", "adet");
+      adet.textContent = k.adet + " kez";
+      const kesit = olustur("p", "kesit");
+      const kalin = olustur("b");
+      kalin.textContent = k.eslesen;
+      kesit.append(document.createTextNode(k.once), kalin, document.createTextNode(k.sonra));
+      const git = olustur("button", "nereden");
+      git.textContent = "bu bölümde oku ›";
+      git.addEventListener("click", () => {
+        const q2 = girdi.value;
+        sekmeAc("oku", false);
+        bolumAc(k.bolum, () => { sekmeAc("ara", false); aramaSayfasiCiz(q2); }, q2);
+      });
+      kart.append(h, adet, kesit, git);
+      sonuc.appendChild(kart);
+    });
+  }
+
+  girdi.addEventListener("input", () => { onerileriCiz(girdi.value.trim()); sonuclariCiz(girdi.value); });
+  girdi.addEventListener("keydown", e => {
+    if (e.key === "Enter") { oneri.innerHTML = ""; sonuclariCiz(girdi.value); girdi.blur(); }
+  });
+  sil.addEventListener("click", () => { girdi.value = ""; oneri.innerHTML = ""; sonuc.innerHTML = ""; girdi.focus(); });
+
+  if (baslangic) { girdi.value = baslangic; sonuclariCiz(baslangic); }
+}
+
+/* Rehberdeki bütün komutlar tek listede — makine başındayken hızlı bakmak için */
+function komutFihristiCiz() {
+  const sayfa = $("#sayfaAra");
+  sayfa.innerHTML = "";
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Arama";
+  geri.addEventListener("click", geriDon);
+  sayfa.appendChild(geri);
+
+  const bilgi = olustur("div", "agac-baslik");
+  bilgi.style.margin = "14px 0 4px";
+  bilgi.textContent = KOMUTLAR.length + " komut — dokununca geçtiği bölüme gider";
+  sayfa.appendChild(bilgi);
+
+  let sonBolum = -1;
+  KOMUTLAR.forEach(k => {
+    if (k.bolum !== sonBolum) {
+      sonBolum = k.bolum;
+      const b = BOLUMLER[k.bolum];
+      const baslik = olustur("div", "metin-basligi");
+      baslik.textContent = (b.numara ? b.numara + ". " : "") + b.kisaBaslik;
+      sayfa.appendChild(baslik);
+    }
+    const d = olustur("button", "fihrist-satir");
+    d.textContent = k.komut;
+    d.addEventListener("click", () => {
+      sekmeAc("oku", false);
+      bolumAc(k.bolum, () => { sekmeAc("ara", false); komutFihristiCiz(); }, k.komut.split(" ")[0]);
+    });
+    sayfa.appendChild(d);
+  });
+}
+
+/* ==========================================================================
+   3) ÇALIŞMA
+   ========================================================================== */
+const MODLAR = [
+  { ad:"Yanlış yaptıkların", izah:"Takıldığın sorular burada birikir; doğru cevaplayınca listeden düşer.", tur:"yanlis" },
+  { ad:"Savunma provası", izah:"Bütün bölümlerden, her türden karışık 15 soru — savunmada olduğu gibi ne geleceği belli değil.", tur:"prova" },
+  { ad:"Bölüm bölüm çalış", izah:"Bir bölüm seç, o bölümün bütün soruları karışık gelsin.", tur:"bolum" },
+  { ad:"Karışık test", izah:"Bütün bölümlerden çoktan seçmeli sorular.", tur:"secme" },
+  { ad:"Komut dizme", izah:"Parçaları doğru sırada dizerek komutu kur.", tur:"dizme" },
+  { ad:"Eşleştirme", izah:"monitoring.sh bilgi kalemlerini komutlarıyla eşleştir.", tur:"esles" },
+  { ad:"Sayı ve değer testi", izah:"Parola politikasının rakamları: 30, 2, 7, 10, 3, 7.", tur:"sayi" },
+  { ad:"Hata avı", izah:"Yanlış komutu ya da atlanan adımı bul.", tur:"hata" },
+  { ad:"Senaryo soruları", izah:"“Değerlendirici şunu istedi, ne yaparsın?”", tur:"senaryo" },
+  { ad:"Sözlük kartları", izah:"Kavramları kart çevirerek tekrar et.", tur:"sozluk" },
+  { ad:"Kurulum ilerlemesi", izah:"Projeyi kurarken nerede kaldığını işaretleyerek takip et.", tur:"kurulum" },
+  { ad:"Savunma kontrol listesi", izah:"Savunmadan önce tek tek işaretle.", tur:"kontrol" }
+];
+
+function modSorulari(tur) {
+  if (tur === "secme") return SORULAR.filter(s => s.tip === "secme");
+  if (tur === "dizme") return SORULAR.filter(s => s.tip === "dizme");
+  if (tur === "esles") return SORULAR.filter(s => s.tip === "esles");
+  if (tur === "sayi" || tur === "hata" || tur === "senaryo") return SORULAR.filter(s => s.alt === tur);
+  return [];
+}
+
+function calisMenusuCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const liste = olustur("div", "mod-liste");
+  MODLAR.forEach(m => {
+    let sayi = 0;
+    if (m.tur === "bolum") sayi = SORULAR.length;
+    else if (m.tur === "prova") sayi = Math.min(15, SORULAR.length);
+    else if (m.tur === "yanlis") sayi = yanlisSorular().length;
+    else if (m.tur === "sozluk") sayi = SOZLUK_KARTLARI.length;
+    else if (m.tur === "kontrol") sayi = KONTROL_LISTESI.length;
+    else if (m.tur === "kurulum") sayi = KURULUM_ADIMLARI.length;
+    else sayi = modSorulari(m.tur).length;
+    if (!sayi && m.tur !== "yanlis") return;   /* yanlış defteri boşken de görünür */
+    const d = olustur("button", "mod-kart");
+    d.innerHTML = '<span class="ad">' + kacir(m.ad) + '</span><span class="izah">' + kacir(m.izah) +
+      '</span><span class="sayi">' + sayi +
+      (m.tur === "kontrol" ? " madde" : m.tur === "kurulum" ? " adım" : m.tur === "sozluk" ? " kart" : " soru") + "</span>";
+    d.addEventListener("click", () => {
+      derinlesGit(calisMenusuCiz);
+      if (m.tur === "bolum") bolumSecimiCiz();
+      else if (m.tur === "prova") oturumBaslat(karistir(SORULAR).slice(0, 15), m.ad);
+      else if (m.tur === "yanlis") yanlisEkraniCiz();
+      else if (m.tur === "sozluk") kartOturumu(SOZLUK_KARTLARI, "Sözlük kartları");
+      else if (m.tur === "kontrol") kontrolListesiCiz();
+      else if (m.tur === "kurulum") kurulumListesiCiz();
+      else oturumBaslat(karistir(modSorulari(m.tur)), m.ad);
+    });
+    liste.appendChild(d);
+  });
+  sayfa.appendChild(liste);
+}
+
+function yanlisEkraniCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Çalışma yolları";
+  geri.addEventListener("click", geriDon);
+  sayfa.appendChild(geri);
+
+  const sorular = yanlisSorular();
+  if (!sorular.length) {
+    const bos = olustur("p", "bos");
+    bos.textContent = "Yanlış defterin boş. Testleri çözdükçe takıldığın sorular buraya birikir, doğru cevapladıkça da listeden düşer.";
+    sayfa.appendChild(bos);
+    return;
+  }
+
+  const bilgi = olustur("div", "agac-baslik");
+  bilgi.style.margin = "16px 0 6px";
+  bilgi.textContent = sorular.length + " soruda takılmışsın";
+  sayfa.appendChild(bilgi);
+
+  const dagilim = {};
+  sorular.forEach(s => { dagilim[s.b] = (dagilim[s.b] || 0) + 1; });
+  const liste = olustur("div", "kontrol");
+  Object.keys(dagilim).sort((a, b) => Number(a) - Number(b)).forEach(no => {
+    const bolum = BOLUMLER.find(x => x.numara === String(no));
+    const satir = olustur("div", "kontrol-oge");
+    satir.style.cursor = "default";
+    const sayi = olustur("span", "kutucuk");
+    sayi.style.cssText = "color:var(--vurgu);border-color:var(--vurgu);font-family:var(--mono)";
+    sayi.textContent = String(dagilim[no]);
+    const ad = olustur("span");
+    ad.textContent = no + ". " + (bolum ? bolum.kisaBaslik : "");
+    satir.append(sayi, ad);
+    liste.appendChild(satir);
+  });
+  sayfa.appendChild(liste);
+
+  const eylem = olustur("div", "eylem");
+  const basla = olustur("button", "ana");
+  basla.textContent = "Çözmeye başla";
+  basla.addEventListener("click", () => {
+    derinlesGit(yanlisEkraniCiz);
+    oturumBaslat(karistir(sorular), "Yanlış yaptıkların");
+  });
+  const temizle = olustur("button");
+  temizle.textContent = "Defteri temizle";
+  temizle.addEventListener("click", () => { depo.yaz("b2r.yanlislar", []); yanlisEkraniCiz(); });
+  eylem.append(basla, temizle);
+  sayfa.appendChild(eylem);
+}
+
+function bolumSecimiCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Çalışma yolları";
+  geri.addEventListener("click", geriDon);
+  sayfa.appendChild(geri);
+
+  const liste = olustur("div", "mod-liste");
+  liste.style.marginTop = "14px";
+  BOLUMLER.forEach(bolum => {
+    if (!bolum.numara) return;
+    const sorular = SORULAR.filter(s => String(s.b) === bolum.numara);
+    if (!sorular.length) return;
+    const d = olustur("button", "mod-kart");
+    d.innerHTML = '<span class="ad">' + bolum.numara + ". " + kacir(bolum.kisaBaslik) +
+      '</span><span class="sayi">' + sorular.length + " soru</span>";
+    d.addEventListener("click", () => {
+      derinlesGit(bolumSecimiCiz);
+      oturumBaslat(karistir(sorular), bolum.numara + ". " + bolum.kisaBaslik);
+    });
+    liste.appendChild(d);
+  });
+  sayfa.appendChild(liste);
+}
+
+/* ---------- Soru oturumu ---------- */
+let oturum = null;
+
+function oturumBaslat(sorular, baslik) {
+  oturum = { sorular, i: 0, dogru: 0, yanlislar: [], cevaplanan: [], baslik };
+  soruCiz();
+}
+
+function ilerlemeCiz(hedef) {
+  const s = olustur("div", "ilerleme");
+  const oran = Math.round((oturum.i / oturum.sorular.length) * 100);
+  s.innerHTML = '<span>' + kacir(oturum.baslik) + "</span>" +
+    '<span class="cubuk"><span class="dolu" style="width:' + oran + '%"></span></span>' +
+    "<span>" + (oturum.i + 1) + "/" + oturum.sorular.length + "</span>";
+  hedef.appendChild(s);
+}
+
+function izahKutusu(soru) {
+  const k = olustur("div", "izah");
+  k.textContent = soru.izah || "";
+  const bolum = BOLUMLER.find(b => b.numara === String(soru.b));
+  if (bolum) {
+    const n = olustur("button", "nereden");
+    n.textContent = bolum.numara + ". " + bolum.kisaBaslik + " bölümünde oku ›";
+    n.addEventListener("click", () => {
+      sekmeAc("oku", false);
+      bolumAc(bolum.no, () => { sekmeAc("calis", false); soruCiz(); });
+    });
+    k.appendChild(n);
+  }
+  return k;
+}
+
+function sonrakiDugmesi(hedef, etiket) {
+  const alan = olustur("div", "eylem");
+  const d = olustur("button", "ana");
+  d.textContent = etiket || (oturum.i === oturum.sorular.length - 1 ? "Sonucu gör" : "Sonraki soru");
+  d.addEventListener("click", () => { oturum.i++; soruCiz(); });
+  alan.appendChild(d);
+  hedef.appendChild(alan);
+  d.focus();
+}
+
+function soruCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  if (oturum.i >= oturum.sorular.length) { sonucCiz(); return; }
+  ilerlemeCiz(sayfa);
+  const soru = oturum.sorular[oturum.i];
+  if (soru.tip === "secme") secmeCiz(sayfa, soru);
+  else if (soru.tip === "dizme") dizmeCiz(sayfa, soru);
+  else if (soru.tip === "esles") eslesCiz(sayfa, soru);
+  window.scrollTo(0, 0);
+}
+
+const ALT_ETIKET = { test:"Kavram", sayi:"Sayı ve değer", hata:"Hata avı", senaryo:"Senaryo" };
+
+function secmeCiz(sayfa, soru) {
+  const kutu = olustur("div", "soru");
+  const etiket = olustur("span", "etiket");
+  etiket.textContent = "Bölüm " + soru.b + " · " + (ALT_ETIKET[soru.alt] || "Kavram");
+  const metin = olustur("p", "metin");
+  metin.textContent = soru.soru;
+  kutu.append(etiket, metin);
+
+  const secenekler = olustur("div", "secenekler");
+  const harfler = ["A", "B", "C", "D", "E"];
+  const dugmeler = [];
+  /* Seçenekler her çizimde karıştırılır: doğru cevabın hep aynı şıkta olması
+     "içeriği bilmeden şıkkı ezberleme" alışkanlığı doğurur. */
+  const sira = karistir(soru.secenekler.map((_, n) => n));
+  const dogruYer = sira.indexOf(soru.dogru);
+  sira.forEach((asil, i) => {
+    const d = olustur("button", "secenek");
+    d.dataset.asil = String(asil);
+    d.innerHTML = '<span class="harf">' + harfler[i] + "</span><span></span>";
+    d.lastChild.textContent = soru.secenekler[asil];
+    d.addEventListener("click", () => {
+      if (d.disabled) return;
+      dugmeler.forEach(x => { x.disabled = true; });
+      dugmeler[dogruYer].classList.add("dogru");
+      if (i !== dogruYer) d.classList.add("yanlis");
+      sonucIsle(soru, i === dogruYer);
+      kutu.appendChild(izahKutusu(soru));
+      sonrakiDugmesi(sayfa);
+    });
+    dugmeler.push(d);
+    secenekler.appendChild(d);
+  });
+  kutu.appendChild(secenekler);
+  sayfa.appendChild(kutu);
+}
+
+function dizmeCiz(sayfa, soru) {
+  const kutu = olustur("div", "soru");
+  const etiket = olustur("span", "etiket");
+  etiket.textContent = "Bölüm " + soru.b + " · " + (soru.komut ? "Komut dizme" : "Sıralama");
+  const metin = olustur("p", "metin");
+  metin.textContent = soru.soru;
+  kutu.append(etiket, metin);
+
+  const alan = olustur("div", "dizi-alan bos-alan");
+  alan.dataset.ipucu = soru.komut ? "Parçalara dokunarak komutu buraya diz" : "Adımları sırayla buraya diz";
+  const havuz = olustur("div", "havuz");
+  const secilen = [];
+
+  function tazele() {
+    alan.classList.toggle("bos-alan", secilen.length === 0);
+  }
+  karistir(soru.parcalar).forEach(parca => {
+    const d = olustur("button", "parca");
+    d.textContent = parca;
+    d.addEventListener("click", () => {
+      if (alan.classList.contains("dogru-alan") || alan.classList.contains("yanlis-alan")) return;
+      d.style.display = "none";
+      const s = olustur("button", "parca");
+      s.textContent = parca;
+      s.addEventListener("click", () => {
+        if (alan.classList.contains("dogru-alan") || alan.classList.contains("yanlis-alan")) return;
+        s.remove();
+        d.style.display = "";
+        secilen.splice(secilen.indexOf(parca), 1);
+        tazele();
+      });
+      alan.appendChild(s);
+      secilen.push(parca);
+      tazele();
+    });
+    havuz.appendChild(d);
+  });
+  kutu.append(alan, havuz);
+  sayfa.appendChild(kutu);
+
+  const eylem = olustur("div", "eylem");
+  const kontrol = olustur("button", "ana");
+  kontrol.textContent = "Kontrol et";
+  kontrol.addEventListener("click", () => {
+    const dogruMu = secilen.length === soru.parcalar.length &&
+      secilen.every((p, i) => p === soru.parcalar[i]);
+    alan.classList.add(dogruMu ? "dogru-alan" : "yanlis-alan");
+    sonucIsle(soru, dogruMu);
+    if (!dogruMu) {
+      const d = olustur("div", "izah");
+      d.innerHTML = "<strong>Doğrusu:</strong> ";
+      const kod = olustur("code");
+      kod.textContent = soru.parcalar.join(soru.komut ? " " : " → ");
+      d.appendChild(kod);
+      kutu.appendChild(d);
+    }
+    kutu.appendChild(izahKutusu(soru));
+    eylem.remove();
+    sonrakiDugmesi(sayfa);
+  });
+  eylem.appendChild(kontrol);
+  sayfa.appendChild(eylem);
+}
+
+function eslesCiz(sayfa, soru) {
+  const kutu = olustur("div", "soru");
+  const etiket = olustur("span", "etiket");
+  etiket.textContent = "Bölüm " + soru.b + " · Eşleştirme";
+  const metin = olustur("p", "metin");
+  metin.textContent = soru.soru;
+  kutu.append(etiket, metin);
+
+  const izgara = olustur("div", "esles");
+  const solSutun = olustur("div", "esles-sutun");
+  const sagSutun = olustur("div", "esles-sutun");
+  let secili = null, kalan = soru.ciftler.length, hataVar = false;
+
+  karistir(soru.ciftler).forEach(([sol]) => {
+    const d = olustur("button", "esles-oge");
+    d.textContent = sol;
+    d.dataset.anahtar = sol;
+    d.addEventListener("click", () => {
+      if (d.classList.contains("tamam")) return;
+      if (secili) secili.classList.remove("secili");
+      secili = d; d.classList.add("secili");
+    });
+    solSutun.appendChild(d);
+  });
+  karistir(soru.ciftler).forEach(([sol, sag]) => {
+    const d = olustur("button", "esles-oge sag");
+    d.textContent = sag;
+    d.dataset.esi = sol;
+    d.addEventListener("click", () => {
+      if (!secili || d.classList.contains("tamam")) return;
+      if (d.dataset.esi === secili.dataset.anahtar) {
+        d.classList.add("tamam"); secili.classList.remove("secili"); secili.classList.add("tamam");
+        secili = null; kalan--;
+        if (kalan === 0) bitir();
+      } else {
+        hataVar = true;
+        d.classList.add("hata");
+        setTimeout(() => d.classList.remove("hata"), 450);
+      }
+    });
+    sagSutun.appendChild(d);
+  });
+
+  function bitir() {
+    sonucIsle(soru, !hataVar);
+    kutu.appendChild(izahKutusu(soru));
+    sonrakiDugmesi(sayfa);
+  }
+
+  izgara.append(solSutun, sagSutun);
+  kutu.appendChild(izgara);
+  sayfa.appendChild(kutu);
+}
+
+function sonucCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const toplam = oturum.sorular.length;
+  const bitis = olustur("div", "bitis");
+  const puan = olustur("div", "puan");
+  puan.textContent = oturum.dogru + "/" + toplam;
+  const alt = olustur("div", "alt");
+  const oran = oturum.dogru / toplam;
+  alt.textContent = oran === 1 ? "Tamamı doğru. Bu bölüm savunmaya hazır."
+    : oran >= 0.7 ? "İyi. Yanlışları bir kez daha oku, sonra tekrar dene."
+    : "Bu bölümü okuma alanından bir kez daha geç, sonra tekrar dene.";
+  bitis.append(puan, alt);
+
+  if (oturum.yanlislar.length) {
+    const kutu = olustur("div", "yanlislar");
+    const b = olustur("h4");
+    b.textContent = "Takıldığın sorular";
+    kutu.appendChild(b);
+    oturum.yanlislar.forEach(s => {
+      const k = olustur("div", "sonuc-kart");
+      const p = olustur("p");
+      p.textContent = s.soru;
+      const git = olustur("button", "nereden");
+      const bolum = BOLUMLER.find(x => x.numara === String(s.b));
+      git.textContent = "Bölüm " + s.b + "'de oku ›";
+      git.addEventListener("click", () => {
+        sekmeAc("oku", false);
+        bolumAc(bolum.no, () => { sekmeAc("calis", false); sonucCiz(); });
+      });
+      k.append(p, git);
+      kutu.appendChild(k);
+    });
+    bitis.appendChild(kutu);
+  }
+  sayfa.appendChild(bitis);
+
+  const eylem = olustur("div", "eylem");
+  const tekrar = olustur("button", "ana");
+  tekrar.textContent = "Baştan çöz";
+  tekrar.addEventListener("click", () => oturumBaslat(karistir(oturum.sorular), oturum.baslik));
+  const cik = olustur("button");
+  cik.textContent = "Çalışma yolları";
+  cik.addEventListener("click", geriDon);
+  eylem.append(tekrar, cik);
+  sayfa.appendChild(eylem);
+}
+
+/* ---------- Kart oturumu (sözlük ve Evo) ---------- */
+function kartOturumu(kartlar, baslik, hedefSayfa) {
+  const sayfa = hedefSayfa || $("#sayfaCalis");
+  let sira = karistir(kartlar), i = 0, bilinen = 0, acik = false, bilinmeyenler = [];
+
+  function ciz() {
+    sayfa.innerHTML = "";
+    if (i >= sira.length) {
+      const bitis = olustur("div", "bitis");
+      const p = olustur("div", "puan");
+      p.textContent = bilinen + "/" + sira.length;
+      const a = olustur("div", "alt");
+      a.textContent = "kart bildim";
+      bitis.append(p, a);
+      sayfa.appendChild(bitis);
+      const eylem = olustur("div", "eylem");
+      if (bilinmeyenler.length) {
+        const kalanlar = olustur("button", "ana");
+        kalanlar.textContent = "Bilemediklerin (" + bilinmeyenler.length + ")";
+        kalanlar.addEventListener("click", () => {
+          sira = karistir(bilinmeyenler); bilinmeyenler = []; i = 0; bilinen = 0; ciz();
+        });
+        eylem.appendChild(kalanlar);
+      }
+      const tekrar = olustur("button", bilinmeyenler.length ? "" : "ana");
+      tekrar.textContent = "Yeniden karıştır";
+      tekrar.addEventListener("click", () => {
+        sira = karistir(kartlar); i = 0; bilinen = 0; bilinmeyenler = []; ciz();
+      });
+      const cik = olustur("button");
+      cik.textContent = hedefSayfa ? "Listeye dön" : "Çalışma yolları";
+      cik.addEventListener("click", geriDon);
+      eylem.append(tekrar, cik);
+      sayfa.appendChild(eylem);
+      return;
+    }
+    const ilerleme = olustur("div", "ilerleme");
+    ilerleme.innerHTML = "<span>" + kacir(baslik) + '</span><span class="cubuk"><span class="dolu" style="width:' +
+      Math.round((i / sira.length) * 100) + '%"></span></span><span>' + (i + 1) + "/" + sira.length + "</span>";
+    sayfa.appendChild(ilerleme);
+
+    const kart = olustur("button", "kart");
+    const k = sira[i];
+    const on = olustur("div", "on" + (k.on.indexOf(" ") === -1 && /[-/_]/.test(k.on) ? " komut" : ""));
+    on.textContent = k.on;
+    kart.appendChild(on);
+    if (acik) {
+      const arka = olustur("div", "arka");
+      arka.textContent = k.arka;
+      kart.appendChild(arka);
+    } else {
+      const ip = olustur("div", "ipucu");
+      ip.textContent = "Cevabı görmek için dokun";
+      kart.appendChild(ip);
+    }
+    kart.addEventListener("click", () => { acik = !acik; ciz(); });
+    sayfa.appendChild(kart);
+
+    const eylem = olustur("div", "eylem");
+    if (acik) {
+      const yok = olustur("button");
+      yok.textContent = "Bilemedim";
+      yok.addEventListener("click", () => {
+        if (bilinmeyenler.indexOf(sira[i]) === -1) bilinmeyenler.push(sira[i]);
+        i++; acik = false; ciz();
+      });
+      const var_ = olustur("button", "ana");
+      var_.textContent = "Bildim";
+      var_.addEventListener("click", () => { bilinen++; i++; acik = false; ciz(); });
+      eylem.append(yok, var_);
+    } else {
+      const cevir = olustur("button", "ana");
+      cevir.textContent = "Cevabı göster";
+      cevir.addEventListener("click", () => { acik = true; ciz(); });
+      eylem.appendChild(cevir);
+    }
+    sayfa.appendChild(eylem);
+    window.scrollTo(0, 0);
+  }
+  ciz();
+}
+
+/* ---------- Kurulum ilerlemesi ---------- */
+function kurulumListesiCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Çalışma yolları";
+  geri.addEventListener("click", geriDon);
+  sayfa.appendChild(geri);
+
+  const tamam = depo.oku("b2r.kurulumAdim", []);
+  const bilgi = olustur("div", "agac-baslik");
+  bilgi.style.margin = "14px 0 10px";
+  const sirada = KURULUM_ADIMLARI.findIndex((_, i) => tamam.indexOf(i) === -1);
+  bilgi.textContent = tamam.length + "/" + KURULUM_ADIMLARI.length + " adım tamam" +
+    (sirada === -1 ? " — hepsi bitti" : " · sıradaki: " + (sirada + 1) + ". adım");
+  sayfa.appendChild(bilgi);
+
+  const liste = olustur("div", "kontrol");
+  KURULUM_ADIMLARI.forEach(([metin, bolumNo], i) => {
+    const secili = tamam.indexOf(i) !== -1;
+    const d = olustur("button", "kontrol-oge" + (secili ? " tikli" : "") + (!secili && i === sirada ? " sirada" : ""));
+    const kutucuk = olustur("span", "kutucuk");
+    kutucuk.textContent = secili ? "✓" : String(i + 1);
+    if (!secili) kutucuk.style.cssText = "color:var(--sonuk);font-family:var(--mono);font-size:11px";
+    const yazi = olustur("span");
+    yazi.innerHTML = satiriCiz(metin);
+    const nereden = olustur("span");
+    nereden.style.cssText = "display:block;color:var(--sonuk);font-size:12.5px;margin-top:3px";
+    nereden.textContent = "bölüm " + bolumNo;
+    yazi.appendChild(nereden);
+    d.append(kutucuk, yazi);
+    d.addEventListener("click", () => {
+      const g = depo.oku("b2r.kurulumAdim", []);
+      const yeri = g.indexOf(i);
+      if (yeri === -1) g.push(i); else g.splice(yeri, 1);
+      depo.yaz("b2r.kurulumAdim", g);
+      kurulumListesiCiz();
+    });
+    liste.appendChild(d);
+  });
+  sayfa.appendChild(liste);
+
+  const eylem = olustur("div", "eylem");
+  const sifirla = olustur("button");
+  sifirla.textContent = "Sıfırla";
+  sifirla.addEventListener("click", () => { depo.yaz("b2r.kurulumAdim", []); kurulumListesiCiz(); });
+  eylem.appendChild(sifirla);
+  sayfa.appendChild(eylem);
+}
+
+/* ---------- Kontrol listesi ---------- */
+function kontrolListesiCiz() {
+  const sayfa = $("#sayfaCalis");
+  sayfa.innerHTML = "";
+  const geri = olustur("button", "geri");
+  geri.textContent = "‹ Çalışma yolları";
+  geri.addEventListener("click", geriDon);
+  sayfa.appendChild(geri);
+
+  const tikli = depo.oku("b2r.kontrol", []);
+  const bilgi = olustur("div", "agac-baslik");
+  bilgi.style.margin = "14px 0 10px";
+  bilgi.textContent = tikli.length + "/" + KONTROL_LISTESI.length + " madde tamam";
+  sayfa.appendChild(bilgi);
+
+  const liste = olustur("div", "kontrol");
+  KONTROL_LISTESI.forEach(([metin, bolumNo], i) => {
+    const secili = tikli.indexOf(i) !== -1;
+    const d = olustur("button", "kontrol-oge" + (secili ? " tikli" : ""));
+    const kutucuk = olustur("span", "kutucuk");
+    kutucuk.textContent = "✓";
+    const yazi = olustur("span");
+    yazi.innerHTML = satiriCiz(metin) + ' <span style="color:var(--sonuk);font-size:12.5px">· bölüm ' + bolumNo + "</span>";
+    d.append(kutucuk, yazi);
+    d.addEventListener("click", () => {
+      const g = depo.oku("b2r.kontrol", []);
+      const yeri = g.indexOf(i);
+      if (yeri === -1) g.push(i); else g.splice(yeri, 1);
+      depo.yaz("b2r.kontrol", g);
+      kontrolListesiCiz();
+    });
+    liste.appendChild(d);
+  });
+  sayfa.appendChild(liste);
+
+  const eylem = olustur("div", "eylem");
+  const sifirla = olustur("button");
+  sifirla.textContent = "Listeyi sıfırla";
+  sifirla.addEventListener("click", () => { depo.yaz("b2r.kontrol", []); kontrolListesiCiz(); });
+  eylem.appendChild(sifirla);
+  sayfa.appendChild(eylem);
+}
+
+/* ==========================================================================
+   4) EVO
+   ========================================================================== */
+function evoSayfasiCiz() {
+  const sayfa = $("#sayfaEvo");
+  sayfa.innerHTML = "";
+
+  const bilgi = olustur("div", "agac-baslik");
+  bilgi.textContent = EVO_KARTLARI.length + " soru — savunmada sorulması muhtemel olanlar";
+  sayfa.appendChild(bilgi);
+
+  const eylem = olustur("div", "eylem");
+  eylem.style.marginTop = "10px";
+  const kartla = olustur("button", "ana");
+  kartla.textContent = "Kart çevirerek çalış";
+  kartla.addEventListener("click", () => {
+    derinlesGit(evoSayfasiCiz);
+    kartOturumu(EVO_KARTLARI.map(k => ({ on: k.soru, arka: k.cevap })), "Evo soruları", $("#sayfaEvo"));
+  });
+  eylem.appendChild(kartla);
+  sayfa.appendChild(eylem);
+
+  let sonGrup = "";
+  EVO_KARTLARI.forEach(k => {
+    if (k.grup !== sonGrup) {
+      sonGrup = k.grup;
+      const b = olustur("h3");
+      b.style.cssText = "font-size:13px;color:var(--vurgu);font-family:var(--mono);margin:22px 0 8px;font-weight:500";
+      b.textContent = k.grup;
+      sayfa.appendChild(b);
+    }
+    const kart = olustur("div", "sonuc-kart");
+    const s = olustur("p");
+    s.style.fontWeight = "600";
+    s.textContent = k.soru;
+    const c = olustur("p");
+    c.style.cssText = "margin-top:8px;color:var(--sonuk)";
+    c.textContent = k.cevap;
+    kart.append(s, c);
+    sayfa.appendChild(kart);
+  });
+}
+
+/* ==========================================================================
+   Kurulum şeridi — ana ekrana ekleme
+   ========================================================================== */
+function zatenKurulu() {
+  return (window.matchMedia && window.matchMedia("(display-mode: standalone)").matches) ||
+         window.navigator.standalone === true;
+}
+
+/* Yerel istem gelmeyen tarayıcılar için elle kurulum adımları */
+function kurulumAdimlari() {
+  const ua = navigator.userAgent || "";
+  const iosMu = /iPhone|iPad|iPod/.test(ua) ||
+                (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+  if (iosMu) return ["Alt çubuktaki Paylaş düğmesine dokun", "Listeden “Ana Ekrana Ekle”yi seç", "Sağ üstten “Ekle”ye dokun"];
+  if (/Android/.test(ua)) return ["Tarayıcının ⋮ menüsünü aç", "“Uygulamayı yükle” ya da “Ana ekrana ekle”ye dokun", "Açılan kutuda onayla"];
+  return ["Adres çubuğunun sağındaki yükleme simgesine tıkla", "Ya da ⋮ menüsünden “Yükle”yi seç", "Açılan kutuda onayla"];
+}
+
+let kurulumSeridi = null;
+
+function kurulumSeridiniKapat(kalici) {
+  if (kurulumSeridi) { kurulumSeridi.remove(); kurulumSeridi = null; }
+  if (kalici) depo.yaz("b2r.kurulum", "gizli");
+}
+
+function kurulumSeridiniGoster() {
+  if (kurulumSeridi || zatenKurulu()) return;
+  if (depo.oku("b2r.kurulum", null) === "gizli") return;
+
+  const serit = olustur("div", "kurulum");
+  serit.setAttribute("role", "dialog");
+  serit.setAttribute("aria-label", "Uygulamayı ana ekrana ekle");
+  const baslik = olustur("p", "baslik");
+  baslik.textContent = "Ana ekrana ekle";
+  const metin = olustur("p", "metin");
+  metin.textContent = "Yolda internetsiz de açılsın diye uygulamayı telefonuna kurabilirsin.";
+  serit.append(baslik, metin);
+
+  const eylem = olustur("div", "eylem");
+  const kapat = olustur("button");
+  kapat.textContent = "Şimdi değil";
+  kapat.addEventListener("click", () => kurulumSeridiniKapat(true));
+
+  const kur = olustur("button", "ana");
+  kur.textContent = "Yükle";
+  kur.addEventListener("click", async () => {
+    const olay = window.kurulumOlayi;
+    if (olay) {
+      window.kurulumOlayi = null;
+      try {
+        olay.prompt();
+        const sonuc = await olay.userChoice;
+        kurulumSeridiniKapat(sonuc && sonuc.outcome === "accepted");
+        if (!(sonuc && sonuc.outcome === "accepted")) kurulumSeridiniGoster();
+      } catch (e) { adimlariAc(); }
+      return;
+    }
+    adimlariAc();
+  });
+
+  function adimlariAc() {
+    /* Tarayıcı yerel istemi vermiyorsa elle kurulum yolunu göster */
+    metin.textContent = "Tarayıcın otomatik kurulum penceresi açmıyor. Şu adımlarla ekleyebilirsin:";
+    if (!serit.querySelector(".adimlar")) {
+      const liste = olustur("ol", "adimlar");
+      kurulumAdimlari().forEach(a => { const li = olustur("li"); li.textContent = a; liste.appendChild(li); });
+      serit.insertBefore(liste, eylem);
+    }
+    kur.textContent = "Anladım";
+    kur.onclick = () => kurulumSeridiniKapat(true);
+  }
+
+  eylem.append(kapat, kur);
+  serit.appendChild(eylem);
+  document.body.appendChild(serit);
+  kurulumSeridi = serit;
+}
+
+/* Olay erken geldiyse yakalanmış olur; gelmediyse de şerit yine de gösterilir. */
+window.addEventListener("kurulum-hazir", kurulumSeridiniGoster);
+window.addEventListener("kurulum-bitti", () => kurulumSeridiniKapat(true));
+setTimeout(kurulumSeridiniGoster, 1200);
+
+/* ==========================================================================
+   Başlangıç
+   ========================================================================== */
+altCubukCiz();
+okumaListesiCiz();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  });
+}
+
+</script>
+</body>
+</html>
